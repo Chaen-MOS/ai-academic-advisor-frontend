@@ -1,0 +1,235 @@
+<!DOCTYPE html><html class="light" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=390, height=844, initial-scale=1.0" name="viewport">
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+            width: 390px;
+            height: 844px;
+            overflow-x: hidden;
+            margin: 0 auto;
+            background-color: #f3fbfa;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: rgba(29, 38, 38, 0.1);
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(29, 38, 38, 0.2);
+            border-radius: 2px;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        /* No shadows or gradients as per style guide */
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-secondary-container": "#5b6464",
+                      "inverse-primary": "#5bd4fe",
+                      "on-tertiary-container": "#4f2b00",
+                      "primary-fixed-dim": "#5bd4fe",
+                      "error": "#ba1a1a",
+                      "on-primary": "#ffffff",
+                      "on-primary-container": "#003948",
+                      "tertiary-fixed-dim": "#ffb873",
+                      "on-error": "#ffffff",
+                      "on-tertiary": "#ffffff",
+                      "inverse-surface": "#2a3232",
+                      "on-primary-fixed-variant": "#004d62",
+                      "on-secondary-fixed-variant": "#3f4948",
+                      "secondary": "#576060",
+                      "primary": "#006781",
+                      "surface-container-highest": "#dce4e4",
+                      "on-error-container": "#93000a",
+                      "outline": "#6d797e",
+                      "inverse-on-surface": "#eaf2f2",
+                      "error-container": "#ffdad6",
+                      "secondary-fixed-dim": "#bfc8c8",
+                      "on-background": "#151d1d",
+                      "on-secondary-fixed": "#141d1d",
+                      "surface-variant": "#dce4e4",
+                      "tertiary-container": "#db892f",
+                      "surface-dim": "#d3dcdb",
+                      "on-surface": "#151d1d",
+                      "surface-container-high": "#e2eae9",
+                      "outline-variant": "#bdc8ce",
+                      "tertiary": "#8c5000",
+                      "secondary-fixed": "#dbe4e4",
+                      "tertiary-fixed": "#ffdcbf",
+                      "surface-container-lowest": "#ffffff",
+                      "on-tertiary-fixed-variant": "#6a3b00",
+                      "on-secondary": "#ffffff",
+                      "on-surface-variant": "#3d484e",
+                      "surface-container": "#e7efef",
+                      "on-tertiary-fixed": "#2d1600",
+                      "on-primary-fixed": "#001f29",
+                      "surface": "#f3fbfa",
+                      "primary-fixed": "#b9eaff",
+                      "secondary-container": "#d8e2e1",
+                      "surface-container-low": "#edf5f5",
+                      "surface-bright": "#f3fbfa",
+                      "surface-tint": "#006781",
+                      "background": "#f3fbfa",
+                      "primary-container": "#15a9d1"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.125rem",
+                      "lg": "0.25rem",
+                      "xl": "0.5rem",
+                      "full": "0.75rem"
+              },
+              "spacing": {
+                      "element-gap": "12px",
+                      "unit": "4px",
+                      "input-height": "40px",
+                      "container-padding": "24px",
+                      "max-content-width": "800px"
+              },
+              "fontFamily": {
+                      "welcome-text": ["Inter"],
+                      "button-label": ["Inter"],
+                      "welcome-text-mobile": ["Inter"],
+                      "body-main": ["Inter"],
+                      "ui-element": ["Inter"]
+              },
+              "fontSize": {
+                      "welcome-text": ["20px", {"lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                      "button-label": ["11px", {"lineHeight": "14px", "fontWeight": "600"}],
+                      "welcome-text-mobile": ["18px", {"lineHeight": "24px", "fontWeight": "700"}],
+                      "body-main": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                      "ui-element": ["11px", {"lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "400"}]
+              }
+            },
+          },
+        }
+      </script>
+</head>
+<body class="bg-background">
+<!-- Top Area (226px height, Solid Light Cyan) -->
+<div class="h-[226px] bg-[#B2FFFF] w-full px-[22px] pt-[48px] flex flex-col items-center relative overflow-hidden">
+<h1 class="absolute top-[48px] left-[22px] text-[26px] font-bold text-[#101919]">Settings</h1>
+<!-- Avatar Container -->
+<div class="mt-[24px] w-[74px] h-[74px] bg-white rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined text-[42px] text-[#148CA3]">person</span>
+</div>
+<!-- Username -->
+<div class="mt-[12px] flex items-center justify-center gap-1">
+<span class="text-[21px] font-bold text-[#101919]">Alex Scholar</span>
+<span class="material-symbols-outlined text-[18px] text-[#101919]">edit</span>
+</div>
+<!-- Email -->
+<div class="mt-[2px]">
+<span class="text-[14px] text-[#607878]">ascholar@gmail.com</span>
+</div>
+</div>
+<!-- Bottom Area (Pure White Background) -->
+<div class="bg-white min-h-[618px] w-full pt-[24px] pb-[40px] flex flex-col gap-6 custom-scrollbar overflow-y-auto">
+<!-- ACCOUNT Card -->
+<div class="mx-[22px] bg-[#F9FCFC] border border-[#E6EEEE] rounded-[16px] px-[16px] py-[12px]">
+<p class="text-[11px] font-bold text-[#1596AC] mb-3 tracking-wider">ACCOUNT</p>
+<div class="flex flex-col gap-0">
+<!-- Profile Row -->
+<div class="flex items-center justify-between py-3 cursor-pointer hover:opacity-70 transition-opacity">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[#1596AC]">person</span>
+<span class="text-[14px] text-[#151d1d] font-body-main">Profile</span>
+</div>
+<span class="material-symbols-outlined text-[#bdc8ce]">chevron_right</span>
+</div>
+<!-- Divider -->
+<div class="h-[1px] bg-[#E6EEEE] w-full"></div>
+<!-- Password Row -->
+<div class="flex items-center justify-between py-3 cursor-pointer hover:opacity-70 transition-opacity">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[#1596AC]">lock</span>
+<span class="text-[14px] text-[#151d1d] font-body-main">Change Password</span>
+</div>
+<span class="material-symbols-outlined text-[#bdc8ce]">chevron_right</span>
+</div>
+</div>
+</div>
+<!-- PREFERENCES Card -->
+<div class="mx-[22px] bg-[#F9FCFC] border border-[#E6EEEE] rounded-[16px] px-[16px] py-[12px]">
+<p class="text-[11px] font-bold text-[#1596AC] mb-3 tracking-wider">PREFERENCES</p>
+<div class="flex flex-col gap-0">
+<!-- Chat Memory Row -->
+<div class="flex items-center justify-between py-3 cursor-pointer hover:opacity-70 transition-opacity">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[#1596AC]">memory</span>
+<span class="text-[14px] text-[#151d1d] font-body-main">Chat Memory</span>
+</div>
+<span class="material-symbols-outlined text-[#bdc8ce]">chevron_right</span>
+</div>
+<!-- Divider -->
+<div class="h-[1px] bg-[#E6EEEE] w-full"></div>
+<!-- Notifications Row -->
+<div class="flex items-center justify-between py-3 cursor-pointer hover:opacity-70 transition-opacity">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[#1596AC]">notifications</span>
+<span class="text-[14px] text-[#151d1d] font-body-main">Notifications</span>
+</div>
+<span class="material-symbols-outlined text-[#bdc8ce]">chevron_right</span>
+</div>
+</div>
+</div>
+<!-- SUPPORT Card -->
+<div class="mx-[22px] bg-[#F9FCFC] border border-[#E6EEEE] rounded-[16px] px-[16px] py-[12px]">
+<p class="text-[11px] font-bold text-[#1596AC] mb-3 tracking-wider">SUPPORT</p>
+<div class="flex flex-col gap-0">
+<!-- T&C Row -->
+<div class="flex items-center justify-between py-3 cursor-pointer hover:opacity-70 transition-opacity">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[#1596AC]">article</span>
+<span class="text-[14px] text-[#151d1d] font-body-main">Terms &amp; Conditions</span>
+</div>
+<span class="material-symbols-outlined text-[#bdc8ce]">chevron_right</span>
+</div>
+<!-- Divider -->
+<div class="h-[1px] bg-[#E6EEEE] w-full"></div>
+<!-- Help Center Row -->
+<div class="flex items-center justify-between py-3 cursor-pointer hover:opacity-70 transition-opacity">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[#1596AC]">help</span>
+<span class="text-[14px] text-[#151d1d] font-body-main">Help Center</span>
+</div>
+<span class="material-symbols-outlined text-[#bdc8ce]">chevron_right</span>
+</div>
+</div>
+</div>
+<!-- Log out Button -->
+<button class="mx-[22px] mt-2 mb-12 h-[52px] bg-white border border-[#F26464] rounded-[14px] flex items-center justify-center gap-2 active:scale-[0.98] transition-transform">
+<span class="material-symbols-outlined text-[#EE5D5D]">logout</span>
+<span class="text-[14px] font-semibold text-[#EE5D5D]">Log out</span>
+</button>
+</div>
+<!-- Active State & Interactions -->
+<script>
+        // Micro-interactions for setting rows
+        const rows = document.querySelectorAll('.cursor-pointer');
+        rows.forEach(row => {
+            row.addEventListener('mousedown', () => {
+                row.classList.add('bg-surface-container');
+            });
+            row.addEventListener('mouseup', () => {
+                row.classList.remove('bg-surface-container');
+            });
+            row.addEventListener('mouseleave', () => {
+                row.classList.remove('bg-surface-container');
+            });
+        });
+
+        // Suppression Logic (No Navigation Shell)
+        // This is a sub-page/focused screen, so Shell components are intentionally omitted.
+    </script>
+</body></html>

@@ -1,0 +1,186 @@
+<!DOCTYPE html><html class="light" lang="en" style=""><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "secondary": "#576060",
+            "background": "#f3fbfa",
+            "inverse-on-surface": "#eaf2f2",
+            "tertiary": "#8c5000",
+            "on-tertiary": "#ffffff",
+            "on-secondary-container": "#5b6464",
+            "error": "#ba1a1a",
+            "surface": "#f3fbfa",
+            "on-primary": "#ffffff",
+            "on-tertiary-fixed": "#2d1600",
+            "inverse-primary": "#5bd4fe",
+            "primary-fixed": "#b9eaff",
+            "surface-bright": "#f3fbfa",
+            "surface-container-high": "#e2eae9",
+            "secondary-fixed": "#dbe4e4",
+            "secondary-container": "#d8e2e1",
+            "on-secondary": "#ffffff",
+            "error-container": "#ffdad6",
+            "surface-variant": "#dce4e4",
+            "on-surface": "#151d1d",
+            "on-secondary-fixed": "#141d1d",
+            "on-error-container": "#93000a",
+            "tertiary-fixed-dim": "#ffb873",
+            "surface-tint": "#006781",
+            "on-primary-fixed": "#001f29",
+            "surface-dim": "#d3dcdb",
+            "surface-container-lowest": "#ffffff",
+            "surface-container": "#e7efef",
+            "outline": "#6d797e",
+            "tertiary-container": "#db892f",
+            "surface-container-low": "#edf5f5",
+            "on-error": "#ffffff",
+            "inverse-surface": "#2a3232",
+            "on-primary-container": "#003948",
+            "on-background": "#151d1d",
+            "primary-container": "#15a9d1",
+            "on-tertiary-container": "#4f2b00",
+            "tertiary-fixed": "#ffdcbf",
+            "on-primary-fixed-variant": "#004d62",
+            "primary-fixed-dim": "#5bd4fe",
+            "primary": "#006781",
+            "surface-container-highest": "#dce4e4",
+            "outline-variant": "#bdc8ce",
+            "on-surface-variant": "#3d484e",
+            "on-secondary-fixed-variant": "#3f4948",
+            "on-tertiary-fixed-variant": "#6a3b00",
+            "secondary-fixed-dim": "#bfc8c8",
+            "brand-cyan": "#B2FFFF",
+            "brand-divider": "#9FD6D6",
+            "brand-dark": "#2E3A3A",
+            "brand-muted": "#3F5555",
+            "brand-blue": "#1A19D8"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.125rem",
+            "lg": "0.25rem",
+            "xl": "0.5rem",
+            "full": "0.75rem"
+          },
+          "fontFamily": {
+            "button-label": ["Inter"],
+            "welcome-text-mobile": ["Inter"],
+            "welcome-text": ["Inter"],
+            "ui-element": ["Inter"],
+            "body-main": ["Inter"]
+          },
+          "fontSize": {
+            "button-label": ["11px", {"lineHeight": "14px", "fontWeight": "600"}],
+            "welcome-text-mobile": ["18px", {"lineHeight": "24px", "fontWeight": "700"}],
+            "welcome-text": ["20px", {"lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+            "ui-element": ["11px", {"lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "400"}],
+            "body-main": ["14px", {"lineHeight": "20px", "fontWeight": "400"}]
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    body {
+      background-color: #f3fbfa;
+      font-family: 'Inter', sans-serif;
+      margin: 0;
+      padding: 0;
+      -webkit-font-smoothing: antialiased;
+    }
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      display: inline-block;
+      line-height: 1;
+      text-transform: none;
+      letter-spacing: normal;
+      word-wrap: normal;
+      white-space: nowrap;
+      direction: ltr;
+    }
+    .canvas-container {
+      width: 390px;
+      height: 844px;
+      margin: 0 auto;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+    .scrollbar-hide::-webkit-scrollbar {
+      display: none;
+    }
+  </style>
+</head>
+<body class="flex items-center justify-center min-h-screen bg-gray-100">
+<!-- Mobile Screen Canvas -->
+<main class="canvas-container bg-white shadow-2xl relative" style="width: 390px; height: 884px; margin: 0 auto; overflow: hidden; display: flex; flex-direction: column; position: relative;">
+<!-- TOP SECTION: Profile Header -->
+<header class="w-full h-auto bg-brand-cyan flex flex-col px-4 pt-6 pb-6 relative"><!-- Top Row Controls -->
+<div class="flex justify-between items-center w-full pl-[3px]">
+<!-- Circular Profile Avatar -->
+<div class="w-[74px] h-[74px] rounded-full bg-white shadow-sm flex items-center justify-center overflow-hidden">
+  <span class="material-symbols-outlined text-[45px] text-[#148CA3]" style="font-variation-settings: &quot;wght&quot; 200;">person</span>
+</div>
+<!-- Settings Icon -->
+<button aria-label="Settings" class="w-10 h-10 flex items-center justify-center transition-transform active:scale-90">
+<span class="material-symbols-outlined" style="font-variation-settings: &quot;wght&quot; 200; color: rgb(20, 140, 163); width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; font-size: 30px;">settings</span>
+</button>
+</div>
+<!-- User Information -->
+<div class="mb-4 mt-6 pl-[3px]">
+<h1 class="text-[22px] font-semibold text-brand-dark leading-none">Username</h1>
+<p class="text-[14px] font-medium text-brand-muted leading-none mt-[10px]">Useremail@gmail.com</p>
+</div>
+<!-- Horizontal Divider -->
+<div class="w-full h-[1px] bg-brand-divider absolute bottom-0 left-0"></div></header>
+<!-- BOTTOM SECTION: Chat History Area -->
+<section class="flex-1 bg-white flex flex-col p-4 relative">
+<!-- Title -->
+<h2 class="text-[30px] font-bold text-[#2F3A3A] mb-2 mt-[-8px]">Chat history</h2>
+<!-- Empty State Content -->
+<div class="flex-1 flex flex-col items-center justify-center text-center -mt-16">
+<p class="text-[16px] font-bold text-[#2F3A3A] whitespace-pre-line">
+          No chat record.
+          Start your chat now.
+        </p>
+</div>
+<!-- Floating Action: Chat Button -->
+<button class="absolute bottom-10 right-4 px-8 h-[52px] bg-brand-cyan rounded-full flex items-center justify-center transition-all hover:opacity-90 active:scale-95 shadow-lg"><span class="material-symbols-outlined mr-2" style="font-variation-settings: &quot;wght&quot; 200; color: rgb(20, 140, 163);">chat</span><span class="text-black font-bold text-[18px]">Chat</span></button>
+</section>
+</main>
+<!-- Interactive Scripts -->
+<script>
+    // Micro-interaction: Subtle hover for the profile avatar
+    document.addEventListener('DOMContentLoaded', () => {
+      const profileIcon = document.querySelector('.w-9.h-9');
+      if (profileIcon) {
+        profileIcon.addEventListener('mouseenter', () => {
+          profileIcon.style.backgroundColor = '#e0fcfc';
+        });
+        profileIcon.addEventListener('mouseleave', () => {
+          profileIcon.style.backgroundColor = 'white';
+        });
+      }
+
+      // Interaction for the Chat Button
+      const chatBtn = document.querySelector('.bg-brand-blue');
+      if (chatBtn) {
+        chatBtn.addEventListener('click', () => {
+          console.log('Initiating new chat session...');
+          // Add a ripple-like feedback or transition here if needed
+        });
+      }
+    });
+  </script>
+
+
+</body></html>
