@@ -1,7 +1,7 @@
 import React, {useState} from 'react';
-import {Alert, Pressable, StyleSheet, Text, View} from 'react-native';
+import {Alert,  Pressable, StyleSheet, Text, View} from 'react-native';
 import type {NativeStackScreenProps} from '@react-navigation/native-stack';
-
+import {useAuth} from '../../contexts/AuthContext';
 import {AuthHero} from '../../components/auth/AuthHero';
 import {AuthScreen} from '../../components/auth/AuthScreen';
 import {AuthTextField} from '../../components/auth/AuthTextField';
@@ -12,16 +12,123 @@ import type {RootStackParamList} from '../../types/navigation';
 type SignUpScreenProps = NativeStackScreenProps<RootStackParamList, 'SignUp'>;
 
 export default function SignUpScreen({navigation}: SignUpScreenProps) {
+  const {signUp} = useAuth();
   const [username, setUsername] = useState('');
-  const [email, setEmail] = useState('123@gmail.com');
+  const [email, setEmail] = useState('');
   const [mobileNumber, setMobileNumber] = useState('');
   const [password, setPassword] = useState('');
   const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  
 
-  const handleSignUp = () => {
-    Alert.alert('Sign up', 'Account creation will be connected to the backend later.');
-  };
+  async function handleSignUp() {
+    const normalizedUsername = username.trim();
+    const normalizedEmail = email.trim().toLowerCase();
+    const normalizedMobileNumber = mobileNumber.trim();
 
+    if (!normalizedUsername) {
+      Alert.alert('Missing Username', 'Please enter your username.');
+      return;
+    }
+
+    if (!normalizedEmail) {
+      Alert.alert('Missing Email', 'Please enter your email address.');
+      return;
+    }
+
+    if (!normalizedEmail.includes('@')) {
+      Alert.alert('Invalid Email', 'Please enter a valid email address.');
+      return;
+    }
+
+    if (!normalizedMobileNumber) {
+      Alert.alert(
+        'Missing Mobile Number',
+        'Please enter your mobile number.',
+      );
+      return;
+    }
+
+    if (password.length < 6) {
+      Alert.alert(
+        'Weak Password',
+        'Your password must contain at least 6 characters.',
+      );
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      Alert.alert(
+        'Password Mismatch',
+        'The confirmation password does not match.',
+      );
+      return;
+    }
+
+    if (!acceptedTerms) {
+      Alert.alert(
+        'Terms Required',
+        'You must agree to the Terms & Conditions before signing up.',
+      );
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+
+      const result = await signUp(
+        normalizedEmail,
+        password,
+        {
+          username: normalizedUsername,
+          mobileNumber: normalizedMobileNumber,
+        },
+      );
+
+      setUsername('');
+      setEmail('');
+      setMobileNumber('');
+      setPassword('');
+      setAcceptedTerms(false);
+
+      if (!result.session) {
+        Alert.alert(
+          'Check Your Email',
+          'Your account was created. Please verify your email before logging in.',
+          [
+            {
+              text: 'Go to Login',
+              onPress: () => navigation.navigate('Login'),
+            },
+          ],
+        );
+
+        return;
+      }
+
+      Alert.alert(
+        'Account Created',
+        'Your account is ready.',
+        [
+          {
+            text: 'Continue',
+            onPress: () => navigation.navigate('Home'),
+          },
+        ],
+      );
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : 'Unable to create your account.';
+
+      Alert.alert('Sign Up Failed', errorMessage);
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+  
   const handleTermsPress = () => {
     setAcceptedTerms(currentValue => !currentValue);
   };
@@ -53,13 +160,14 @@ export default function SignUpScreen({navigation}: SignUpScreenProps) {
               label="Email"
               value={email}
               onChangeText={setEmail}
+              placeholder="123@example.com"
               keyboardType="email-address"
             />
             <AuthTextField
               label="Mobile Number"
               value={mobileNumber}
               onChangeText={setMobileNumber}
-              placeholder="Enter your mobile"
+              placeholder="0123456789"
               keyboardType="phone-pad"
             />
             <AuthTextField
@@ -67,6 +175,13 @@ export default function SignUpScreen({navigation}: SignUpScreenProps) {
               value={password}
               onChangeText={setPassword}
               placeholder="Enter your password"
+              secureTextEntry
+            />
+            <AuthTextField
+              label="Confirm Password"
+              value={confirmPassword}
+              onChangeText={setConfirmPassword}
+              placeholder="Re-enter your password"
               secureTextEntry
             />
           </View>
@@ -86,9 +201,10 @@ export default function SignUpScreen({navigation}: SignUpScreenProps) {
 
           <View style={styles.actions}>
             <PrimaryButton
-              label="Sign Up"
+              label={isSubmitting ? 'Creating Account...' : 'Sign Up'}
               accessibilityLabel="Create account"
               onPress={handleSignUp}
+              disabled={isSubmitting}
               style={styles.signUpButton}
             />
             <Pressable

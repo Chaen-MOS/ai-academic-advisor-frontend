@@ -15,6 +15,7 @@ type PrimaryButtonProps = {
   onPress: () => void;
   variant?: 'cyan' | 'white' | 'accent';
   style?: StyleProp<ViewStyle>;
+  disabled?: boolean;
 };
 
 export function PrimaryButton({
@@ -23,21 +24,22 @@ export function PrimaryButton({
   onPress,
   variant = 'cyan',
   style,
+  disabled = false,
 }: PrimaryButtonProps) {
   const isWhite = variant === 'white';
   const isAccent = variant === 'accent';
 
   return (
-    <Pressable
+   <Pressable
       accessibilityRole="button"
-      accessibilityLabel={accessibilityLabel ?? label}
+      accessibilityLabel={accessibilityLabel}
       onPress={onPress}
+      disabled={disabled}
       style={({pressed}) => [
         styles.button,
-        isWhite ? styles.whiteButton : styles.cyanButton,
-        isAccent && styles.accentButton,
-        pressed && styles.pressed,
         style,
+        pressed && !disabled && styles.pressed,
+        disabled && styles.disabled,
       ]}>
       <Text
         style={[
@@ -85,5 +87,8 @@ const styles = StyleSheet.create({
   },
   pressed: {
     opacity: 0.72,
+  },
+  disabled: {
+    opacity: 0.5,
   },
 });
