@@ -1,7 +1,7 @@
 import React, {useState} from 'react';
 import {Pressable, StyleSheet, Text, View} from 'react-native';
 import type {NativeStackScreenProps} from '@react-navigation/native-stack';
-
+import {Alert} from 'react-native';
 import {AuthFooterLink} from '../../components/auth/AuthFooterLink';
 import {AuthHero} from '../../components/auth/AuthHero';
 import {AuthScreen} from '../../components/auth/AuthScreen';
@@ -9,17 +9,46 @@ import {AuthTextField} from '../../components/auth/AuthTextField';
 import {PrimaryButton} from '../../components/common/PrimaryButton';
 import {colors, spacing, typography} from '../../theme';
 import type {RootStackParamList} from '../../types/navigation';
+import {useAuth} from '../../contexts/AuthContext';
 
 type LoginScreenProps = NativeStackScreenProps<RootStackParamList, 'Login'>;
 
 export default function LoginScreen({navigation}: LoginScreenProps) {
-  const [email, setEmail] = useState('dddd');
-  const [password, setPassword] = useState('password');
+  const {signIn} = useAuth();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleLogin = () => {
-    navigation.replace('Home');
-  };
+  async function handleLogin() {
+    const normalizedEmail = email.trim().toLowerCase();
+
+    if (!normalizedEmail) {
+      Alert.alert('Missing Email', 'Please enter your email address.');
+      return;
+    }
+
+    if (!password) {
+      Alert.alert('Missing Password', 'Please enter your password.');
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+
+      await signIn(normalizedEmail, password);
+
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : 'Unable to sign in.';
+
+      Alert.alert('Sign In Failed', errorMessage);
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
 
   const handleForgotPasswordPress = () => {
     navigation.navigate('ForgotPassword');
@@ -50,6 +79,7 @@ export default function LoginScreen({navigation}: LoginScreenProps) {
               value={email}
               onChangeText={setEmail}
               keyboardType="email-address"
+              autoCapitalize="none"
             />
             <AuthTextField
               label="Password"
@@ -87,7 +117,12 @@ export default function LoginScreen({navigation}: LoginScreenProps) {
         </View>
 
         <View style={styles.footer}>
-          <PrimaryButton label="Login" onPress={handleLogin} style={styles.loginButton} />
+          <PrimaryButton
+            label={isSubmitting ? 'Signing In...' : 'Sign In'}
+            accessibilityLabel="Sign in"
+            onPress={handleLogin}
+            disabled={isSubmitting}
+          />
           <AuthFooterLink
             prompt="Don't have an Account?"
             actionLabel="Sign Up"

@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {Pressable, ScrollView, StyleSheet, Text} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import type {NativeStackScreenProps} from '@react-navigation/native-stack';
-
+import {Alert} from 'react-native';
+import {useAuth} from '../contexts/AuthContext';
 import {ProfileHeader} from '../components/profile/ProfileHeader';
 import {SettingSection} from '../components/settings/SettingSection';
 import {profileData, settingsSections} from '../data/mockData';
@@ -13,11 +14,31 @@ import type {RootStackParamList} from '../types/navigation';
 type SettingsScreenProps = NativeStackScreenProps<RootStackParamList, 'Settings'>;
 
 export default function SettingsScreen({navigation}: SettingsScreenProps) {
+  const {logout} = useAuth();
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+
   const handleRowPress = (item: SettingRowItem) => {
     if (item.target) {
       navigation.navigate(item.target);
     }
   };
+
+  async function handleLogout() {
+    try {
+      setIsLoggingOut(true);
+      await logout();
+
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : 'Unable to sign out.';
+
+      Alert.alert('Logout Failed', errorMessage);
+    } finally {
+      setIsLoggingOut(false);
+    }
+  }
 
   return (
     <SafeAreaView edges={['bottom']} style={styles.screen}>
@@ -41,7 +62,7 @@ export default function SettingsScreen({navigation}: SettingsScreenProps) {
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Log out"
-          onPress={() => navigation.replace('Login')}
+          onPress={handleLogout}
           style={({pressed}) => [styles.logoutButton, pressed && styles.pressed]}>
           <Text style={styles.logoutIcon}>logout</Text>
           <Text style={styles.logoutText}>Log out</Text>
