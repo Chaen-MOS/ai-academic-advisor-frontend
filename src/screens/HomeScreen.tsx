@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import type {NativeStackScreenProps} from '@react-navigation/native-stack';
-
+import Markdown from 'react-native-markdown-display';
 import {ScreenHeader} from '../components/common/ScreenHeader';
 import {QuickQuestionButton} from '../components/home/QuickQuestionButton';
 import {quickQuestions} from '../data/mockData';
@@ -114,13 +114,15 @@ export default function AcademicAdvisorHomeScreen({
             isUser ? styles.userBubble : styles.assistantBubble,
             item.status === 'failed' && styles.failedBubble,
           ]}>
-          <Text
-            style={[
-              styles.messageText,
-              isUser ? styles.userMessageText : styles.assistantMessageText,
-            ]}>
-            {item.content}
-          </Text>
+          {isUser ? (
+            <Text style={[styles.messageText, styles.userMessageText]}>
+              {item.content}
+            </Text>
+          ) : (
+            <Markdown style={markdownStyles}>
+              {item.content}
+            </Markdown>
+          )}
         </View>
       </View>
     );
@@ -223,6 +225,41 @@ export default function AcademicAdvisorHomeScreen({
     </SafeAreaView>
   );
 }
+
+const markdownStyles = {
+  body: {
+    ...typography.body,
+    color: colors.primaryText,
+    lineHeight: 21,
+    marginTop: 0,
+    marginBottom: 0,
+  },
+  strong: {
+    fontWeight: '700' as const,
+    color: colors.primaryText,
+  },
+  paragraph: {
+    marginTop: 0,
+    marginBottom: spacing.xs,
+  },
+  bullet_list: {
+    marginTop: spacing.xs,
+    marginBottom: spacing.xs,
+  },
+  ordered_list: {
+    marginTop: spacing.xs,
+    marginBottom: spacing.xs,
+  },
+  list_item: {
+    marginBottom: spacing.xs,
+  },
+  code_inline: {
+    fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace',
+    backgroundColor: colors.softCyan,
+    paddingHorizontal: 4,
+    borderRadius: 4,
+  },
+};
 
 const styles = StyleSheet.create({
   safeArea: {
@@ -359,3 +396,4 @@ const styles = StyleSheet.create({
     opacity: 0.4,
   },
 });
+
