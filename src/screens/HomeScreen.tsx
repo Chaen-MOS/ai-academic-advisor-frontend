@@ -1,5 +1,7 @@
-import React, {useState} from 'react';
+import React, {useRef, useState} from 'react';
 import {
+  ActivityIndicator,
+  FlatList,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -14,24 +16,38 @@ import type {NativeStackScreenProps} from '@react-navigation/native-stack';
 import {ScreenHeader} from '../components/common/ScreenHeader';
 import {QuickQuestionButton} from '../components/home/QuickQuestionButton';
 import {quickQuestions} from '../data/mockData';
+import {sendChatMessage} from '../services/chatApi';
 import {colors, radius, spacing, typography} from '../theme';
 import type {RootStackParamList} from '../types/navigation';
 
 type HomeScreenProps = NativeStackScreenProps<RootStackParamList, 'Home'>;
 
+type ChatMessage = {
+  id: string;
+  role: 'user' | 'assistant';
+  content: string;
+  status: 'completed' | 'failed';
+};
+
 export default function AcademicAdvisorHomeScreen({
   navigation,
 }: HomeScreenProps) {
   const [message, setMessage] = useState('');
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+  const [isSending, setIsSending] = useState(false);
+
+  const listRef = useRef<FlatList<ChatMessage>>(null);
+
+  const hasConversation = chatMessages.length > 0;
 
   const handleQuickQuestionPress = (question: string) => {
     setMessage(question);
   };
 
-  const handleSubmitMessage = () => {
+  const handleSubmitMessage = async () => {
     const trimmedMessage = message.trim();
 
-    if (!trimmedMessage) {
+    if (!trimmedMessage || isSending) {
       return;
     }
 
@@ -41,7 +57,73 @@ export default function AcademicAdvisorHomeScreen({
       return;
     }
 
+    const userMessage: ChatMessage = {
+      id: `user-${Date.now()}`,
+      role: 'user',
+      content: trimmedMessage,
+      status: 'completed',
+    };
+
+    setChatMessages(previous => [...previous, userMessage]);
     setMessage('');
+    setIsSending(true);
+
+    try {
+      const result = await sendChatMessage('2201234', trimmedMessage);
+
+      const assistantMessage: ChatMessage = {
+        id: `assistant-${Date.now()}`,
+        role: 'assistant',
+        content: result.answer,
+        status: 'completed',
+      };
+
+      setChatMessages(previous => [...previous, assistantMessage]);
+    } catch (error) {
+      const failedMessage: ChatMessage = {
+        id: `failed-${Date.now()}`,
+        role: 'assistant',
+        content:
+          'I could not connect to the academic advisor service. Please try again.',
+        status: 'failed',
+      };
+
+      setChatMessages(previous => [...previous, failedMessage]);
+
+      console.error(
+        'Chat request failed:',
+        error instanceof Error ? error.message : error,
+      );
+    } finally {
+      setIsSending(false);
+    }
+  };
+
+  const renderMessage = ({item}: {item: ChatMessage}) => {
+    const isUser = item.role === 'user';
+
+    return (
+      <View
+        style={[
+          styles.messageRow,
+          isUser ? styles.userMessageRow : styles.assistantMessageRow,
+        ]}>
+        <View
+          style={[
+            styles.messageBubble,
+            isUser ? styles.userBubble : styles.assistantBubble,
+            item.status === 'failed' && styles.failedBubble,
+          ]}>
+          <Text
+            style={[
+              styles.messageText,
+              isUser ? styles.userMessageText : styles.assistantMessageText,
+            ]}>
+            {item.content}
+          </Text>
+        </View>
+      </View>
+    );
   };
 
   return (
@@ -57,24 +139,54 @@ export default function AcademicAdvisorHomeScreen({
           onRightPress={() => navigation.navigate('Notifications')}
         />
 
-        <View style={styles.content}>
-          <View style={styles.greetingArea}>
-            <Text style={styles.greeting}>How can I help you{'\n'}today?</Text>
-            <Text style={styles.subtitle}>
-              Ask anything about your academic journey.
-            </Text>
-          </View>
+        {!hasConversation ? (
+          <View style={styles.content}>
+            <View style={styles.greetingArea}>
+              <Text style={styles.greeting}>
+                How can I help you{'\n'}today?
+              </Text>
 
-          <View style={styles.quickGrid}>
-            {quickQuestions.map(question => (
-              <QuickQuestionButton
-                key={question}
-                label={question}
-                onPress={() => handleQuickQuestionPress(question)}
-              />
-            ))}
+              <Text style={styles.subtitle}>
+                Ask anything about your academic journey.
+              </Text>
+            </View>
+
+            <View style={styles.quickGrid}>
+              {quickQuestions.map(question => (
+                <QuickQuestionButton
+                  key={question}
+                  label={question}
+                  onPress={() => handleQuickQuestionPress(question)}
+                />
+              ))}
+            </View>
           </View>
-        </View>
+        ) : (
+          <FlatList
+            ref={listRef}
+            data={chatMessages}
+            keyExtractor={item => item.id}
+            renderItem={renderMessage}
+            contentContainerStyle={styles.chatContent}
+            keyboardShouldPersistTaps="handled"
+            onContentSizeChange={() => {
+              listRef.current?.scrollToEnd({animated: true});
+            }}
+            onLayout={() => {
+              listRef.current?.scrollToEnd({animated: false});
+            }}
+            ListFooterComponent={
+              isSending ? (
+                <View style={styles.typingArea}>
+                  <ActivityIndicator size="small" color={colors.accent} />
+                  <Text style={styles.typingText}>
+                    Academic advisor is thinking...
+                  </Text>
+                </View>
+              ) : null
+            }
+          />
+        )}
 
         <View style={styles.inputArea}>
           <View style={styles.inputShell}>
@@ -86,18 +198,24 @@ export default function AcademicAdvisorHomeScreen({
               placeholderTextColor={colors.mutedText}
               returnKeyType="send"
               selectionColor={colors.accent}
+              editable={!isSending}
               style={styles.input}
             />
+
             <Pressable
               accessibilityRole="button"
               accessibilityLabel="Send message"
+              disabled={isSending || !message.trim()}
               hitSlop={spacing.xs}
               onPress={handleSubmitMessage}
               style={({pressed}) => [
                 styles.sendButton,
                 pressed && styles.pressed,
+                (isSending || !message.trim()) && styles.disabledButton,
               ]}>
-              <Text style={styles.sendText}>send</Text>
+              <Text style={styles.sendText}>
+                {isSending ? '...' : 'send'}
+              </Text>
             </Pressable>
           </View>
         </View>
@@ -115,6 +233,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background,
   },
+
   content: {
     flex: 1,
     paddingHorizontal: spacing.md,
@@ -144,6 +263,64 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     gap: spacing.sm,
   },
+
+  chatContent: {
+    flexGrow: 1,
+    paddingHorizontal: spacing.md,
+    paddingTop: spacing.md,
+    paddingBottom: spacing.lg,
+  },
+  messageRow: {
+    width: '100%',
+    marginBottom: spacing.sm,
+  },
+  userMessageRow: {
+    alignItems: 'flex-end',
+  },
+  assistantMessageRow: {
+    alignItems: 'flex-start',
+  },
+  messageBubble: {
+    maxWidth: '82%',
+    borderRadius: radius.lg,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+  },
+  userBubble: {
+    backgroundColor: colors.softCyan,
+    borderBottomRightRadius: spacing.xs,
+  },
+  assistantBubble: {
+    backgroundColor: colors.background,
+    borderWidth: 1,
+    borderColor: colors.softCyan,
+    borderBottomLeftRadius: spacing.xs,
+  },
+  failedBubble: {
+    opacity: 0.7,
+  },
+  messageText: {
+    ...typography.body,
+    lineHeight: 21,
+  },
+  userMessageText: {
+    color: colors.primaryText,
+  },
+  assistantMessageText: {
+    color: colors.primaryText,
+  },
+
+  typingArea: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    paddingVertical: spacing.sm,
+  },
+  typingText: {
+    ...typography.small,
+    color: colors.secondaryText,
+  },
+
   inputArea: {
     paddingHorizontal: spacing.md,
     paddingBottom: spacing.md,
@@ -177,5 +354,8 @@ const styles = StyleSheet.create({
   },
   pressed: {
     opacity: 0.68,
+  },
+  disabledButton: {
+    opacity: 0.4,
   },
 });

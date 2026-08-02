@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AI Academic Advisor Backend Blueprint - Corrected</title>
+  <style>
+    :root {
+      --critical:#C62828; --required:#E53935; --recommended:#FB8C00; --optional:#FDD835;
+      --future:#1E88E5; --security:#8E24AA; --derived:#757575; --available:#43A047;
+      --ink:#1D2626; --muted:#667373; --line:#E3ECEC; --card:#F7FBFB; --accent:#15A9D1; --soft:#B2FFFF;
+    }
+    * { box-sizing: border-box; }
+    body { margin:0; color:var(--ink); background:#fff; font:14px/1.5 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
+    header { position:fixed; inset:0 0 auto 0; z-index:5; display:flex; gap:16px; align-items:center; min-height:66px; padding:10px 18px; background:var(--soft); border-bottom:1px solid #9FD6D6; }
+    h1 { margin:0; font-size:18px; min-width:310px; }
+    .filters { display:flex; gap:8px; flex-wrap:wrap; align-items:center; width:100%; }
+    input { width:min(360px,100%); border:1px solid var(--line); border-radius:6px; padding:8px 10px; }
+    button { border:1px solid var(--line); border-radius:999px; padding:7px 10px; background:#fff; color:var(--ink); font-weight:700; cursor:pointer; }
+    button.active { background:var(--accent); border-color:var(--accent); color:#fff; }
+    aside { position:fixed; top:66px; bottom:0; left:0; width:270px; overflow:auto; padding:16px; background:var(--card); border-right:1px solid var(--line); }
+    aside a { display:block; padding:7px 0; color:var(--ink); text-decoration:none; border-bottom:1px solid rgba(227,236,236,.75); }
+    main { margin-left:270px; padding:90px 24px 48px; max-width:1440px; }
+    section, details { margin-bottom:18px; border:1px solid var(--line); border-radius:8px; overflow:hidden; background:#fff; }
+    h2, summary { margin:0; padding:14px 16px; background:var(--card); border-bottom:1px solid var(--line); font-size:16px; font-weight:800; cursor:pointer; }
+    .body { padding:16px; }
+    .cards { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:12px; }
+    .metric { padding:14px; border:1px solid var(--line); border-radius:8px; background:var(--card); }
+    .metric strong { display:block; font-size:28px; color:var(--accent); }
+    .table-scroll { max-height:540px; overflow:auto; border:1px solid var(--line); border-radius:8px; }
+    table { width:100%; min-width:820px; border-collapse:collapse; }
+    th,td { padding:10px 11px; border-bottom:1px solid var(--line); vertical-align:top; text-align:left; }
+    th { position:sticky; top:0; background:var(--card); z-index:1; }
+    pre { overflow:auto; padding:12px; border-radius:8px; color:#E9FEFE; background:#102025; }
+    .badge { display:inline-block; margin:1px 4px 1px 0; padding:2px 7px; border-radius:999px; color:#fff; font-size:11px; font-weight:800; white-space:nowrap; }
+    .critical{background:var(--critical)} .required{background:var(--required)} .recommended{background:var(--recommended)}
+    .optional{background:var(--optional); color:#332900} .future{background:var(--future)} .security{background:var(--security)}
+    .derived{background:var(--derived)} .available{background:var(--available)} .hidden{display:none!important}
+    .legend { display:grid; gap:7px; margin-top:16px; }
+    @media (max-width:900px){ header{position:static;align-items:flex-start;flex-direction:column} aside{position:static;width:auto;border-right:0;border-bottom:1px solid var(--line)} main{margin-left:0;padding:18px} h1{min-width:0} }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Corrected Backend Blueprint</h1>
+    <div class="filters">
+      <input id="search" type="search" placeholder="Search Supabase, auth, profile, RLS, scope..." />
+      <button data-filter="all" class="active">All</button>
+      <button data-filter="critical">Critical</button>
+      <button data-filter="required">Required</button>
+      <button data-filter="security">Security</button>
+      <button data-filter="recommended">Recommended</button>
+      <button data-filter="future">Future</button>
+    </div>
+  </header>
+
+  <aside>
+    <nav>
+      <a href="#overview">Overview</a>
+      <a href="#decision">Firebase vs Supabase</a>
+      <a href="#auth">Auth</a>
+      <a href="#profile">Profile Policy</a>
+      <a href="#schema">Schema Scope</a>
+      <a href="#ownership">Ownership Matrix</a>
+      <a href="#security">Supabase Security</a>
+      <a href="#flow">AI/RAG Flow</a>
+      <a href="#future">Future Integration</a>
+      <a href="#open">Open Decisions</a>
+    </nav>
+    <div class="legend">
+      <span class="badge critical">CRITICAL #C62828</span>
+      <span class="badge required">REQUIRED #E53935</span>
+      <span class="badge recommended">RECOMMENDED #FB8C00</span>
+      <span class="badge optional">OPTIONAL #FDD835</span>
+      <span class="badge future">FUTURE #1E88E5</span>
+      <span class="badge security">SECURITY #8E24AA</span>
+      <span class="badge derived">DERIVED/LOCAL ONLY/NOT BACKEND #757575</span>
+      <span class="badge available">CURRENTLY AVAILABLE #43A047</span>
+    </div>
+  </aside>
+
+  <main>
+    <section id="overview" data-text="overview react native express supabase gemini rag metrics">
+      <h2>Overview</h2>
+      <div class="body">
+        <p>The corrected architecture is Supabase-primary while preserving Express. React Native handles UI/session state, Supabase Auth handles account/session primitives, Express verifies Supabase JWTs and runs business logic, and Gemini plus the existing RAG implementation remain backend-only.</p>
+        <pre>React Native -> Node.js / Express API -> Supabase Auth, PostgreSQL, Storage, RLS -> Gemini + existing RAG</pre>
+        <div class="cards">
+          <div class="metric"><strong>9</strong>Screens scanned</div>
+          <div class="metric"><strong>12</strong>Components scanned</div>
+          <div class="metric"><strong>7</strong>Minimum Demo application tables</div>
+          <div class="metric"><strong>13</strong>Strong FYP total application tables</div>
+          <div class="metric"><strong>0</strong>Custom password/session tables</div>
+        </div>
+      </div>
+    </section>
+
+    <details id="decision" open data-text="firebase supabase comparison authentication react native relational conversations messages sources documents rules advisor notifications storage authorization complexity">
+      <summary>Firebase vs Supabase Decision</summary>
+      <div class="body table-scroll">
+        <table>
+          <thead><tr><th>Concern</th><th>Firebase</th><th>Supabase</th><th>Decision</th></tr></thead>
+          <tbody>
+            <tr data-priority="required"><td>Authentication</td><td>Mature, good RN support.</td><td>Auth supports sign up, login, email verification, reset password, sessions.</td><td><span class="badge required">Supabase sufficient</span></td></tr>
+            <tr data-priority="required"><td>React Native integration</td><td>Strong SDKs.</td><td>JS client works; session persistence needs explicit secure storage.</td><td><span class="badge required">Supabase OK</span></td></tr>
+            <tr data-priority="critical"><td>Relational data</td><td>Document model; joins are manual.</td><td>PostgreSQL constraints, joins, jsonb, RLS.</td><td><span class="badge critical">Supabase better</span></td></tr>
+            <tr data-priority="critical"><td>Conversations/messages/sources</td><td>Possible but citation joins are manual.</td><td>Natural FK model from messages to sources to chunks.</td><td><span class="badge critical">Supabase better</span></td></tr>
+            <tr data-priority="critical"><td>Document metadata and rules</td><td>Possible but less relational.</td><td>Versioned metadata/rules in PostgreSQL/jsonb.</td><td><span class="badge critical">Supabase better</span></td></tr>
+            <tr data-priority="required"><td>Advisor requests</td><td>Possible.</td><td>Relational status/assignment/context model.</td><td><span class="badge required">Supabase better</span></td></tr>
+            <tr data-priority="recommended"><td>Notifications</td><td>Strong push ecosystem.</td><td>Strong in-app inbox; push can be added later.</td><td><span class="badge recommended">Supabase for app data</span></td></tr>
+            <tr data-priority="security"><td>Authorization</td><td>Security rules separate from SQL.</td><td>RLS close to data model.</td><td><span class="badge security">Supabase preferred</span></td></tr>
+            <tr data-priority="recommended"><td>Development complexity</td><td>Quick start; more work for relational consistency.</td><td>More SQL upfront; better fit for RAG/accountability.</td><td><span class="badge recommended">Recommend Supabase</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </details>
+
+    <details id="auth" open data-text="authentication supabase auth signup login email verification persistent session refresh forgot password reset logout express jwt react native">
+      <summary>Authentication Architecture</summary>
+      <div class="body table-scroll">
+        <table>
+          <thead><tr><th>Layer</th><th>Responsibilities</th><th>Priority</th></tr></thead>
+          <tbody>
+            <tr data-priority="required"><td>Supabase Auth</td><td>Account creation, password verification, email verification, reset-password email, access and refresh sessions.</td><td><span class="badge required">REQUIRED</span></td></tr>
+            <tr data-priority="required"><td>React Native</td><td>Authentication UI, persistent session, secure client session handling, auth-state navigation.</td><td><span class="badge required">REQUIRED</span></td></tr>
+            <tr data-priority="security critical"><td>Express</td><td>Verify Supabase JWT, enforce business authorization, protect AI/admin endpoints, map auth user to student profile, never expose service-role keys.</td><td><span class="badge security">SECURITY</span><span class="badge critical">CRITICAL</span></td></tr>
+          </tbody>
+        </table>
+        <p><span class="badge critical">CRITICAL</span> Do not create a second custom password-hashing or refresh-token system. Supabase owns `auth.users`, password hashes, and sessions.</p>
+      </div>
+    </details>
+
+    <details id="profile" open data-text="profile self declared unverified not connected utar academic standing normal probation warning terminated graduated no study mode">
+      <summary>Self-Declared Profile Policy</summary>
+      <div class="body">
+        <p>Students may edit their own academic profile because the FYP prototype is not integrated with the university information system. Programme, faculty, CGPA, academic standing, trimester, and credits are <strong>SELF-DECLARED</strong>, <strong>UNVERIFIED</strong>, and <strong>NOT CONNECTED TO UTAR SYSTEM</strong>.</p>
+        <p><span class="badge critical">CRITICAL</span> Do not define a separate enrollment-mode field. Use `academic_standing`: NORMAL, PROBATION, WARNING, TERMINATED, GRADUATED. Minimum demo may support NORMAL and PROBATION only.</p>
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>Editable fields</th><th>Protected metadata</th></tr></thead>
+            <tbody>
+              <tr data-priority="required security"><td>full_name, preferred_name, student_id, programme, faculty, current_year, current_trimester, academic_standing, cgpa, credits_earned, total_credits_required, expected_graduation_date, notification_preferences</td><td>profile_source default SELF_DECLARED, is_verified default false, last_updated_by, updated_at. Students cannot modify role or verification status.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </details>
+
+    <details id="schema" open data-text="schema supabase postgresql uuid timestamptz jsonb text integer numeric boolean minimum demo strong fyp optional courses prerequisites terms records">
+      <summary>Supabase PostgreSQL Schema Scope</summary>
+      <div class="body table-scroll">
+        <table>
+          <thead><tr><th>Scope</th><th>Tables</th><th>Count</th></tr></thead>
+          <tbody>
+            <tr data-priority="critical required"><td>Minimum Demo</td><td>student_profiles, conversations, messages, message_sources, documents, document_chunks, academic_rules. Supabase-managed auth.users is used but not counted as app table.</td><td>7 app tables</td></tr>
+            <tr data-priority="recommended"><td>Strong FYP</td><td>Minimum tables plus chat_feedback, advisor_requests, advisor_request_messages, announcements, notifications, audit_logs.</td><td>13 total app tables</td></tr>
+            <tr data-priority="future recommended"><td>Full Planned / Optional</td><td>courses, course_prerequisites, academic_terms, student_course_records, support_articles, legal_documents, feature_flags, model_usage_logs, retrieval_logs.</td><td>Optional</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </details>
+
+    <details id="ownership" open data-text="ownership matrix rls mobile select insert update delete express only student profiles conversations messages sources documents chunks rules advisor notifications">
+      <summary>Supabase Table Ownership Matrix</summary>
+      <div class="body table-scroll">
+        <table>
+          <thead><tr><th>Table</th><th>Mobile SELECT</th><th>Mobile INSERT</th><th>Mobile UPDATE</th><th>Mobile DELETE</th><th>Express-only notes</th></tr></thead>
+          <tbody>
+            <tr data-priority="security required"><td>student_profiles</td><td>Own row</td><td>Own bootstrap row if controlled</td><td>Own editable fields only</td><td>No</td><td>Verification fields backend/admin only</td></tr>
+            <tr data-priority="critical"><td>conversations</td><td>Prefer Express</td><td>Prefer Express</td><td>Prefer Express</td><td>Archive through Express</td><td>AI validation required</td></tr>
+            <tr data-priority="critical"><td>messages</td><td>Prefer Express</td><td>No direct insert</td><td>No</td><td>No</td><td>Created by Express after AI flow</td></tr>
+            <tr data-priority="critical"><td>message_sources</td><td>Through Express</td><td>No</td><td>No</td><td>No</td><td>Created by RAG flow</td></tr>
+            <tr data-priority="critical"><td>documents/document_chunks</td><td>No</td><td>No</td><td>No</td><td>No</td><td>Admin/Express only</td></tr>
+            <tr data-priority="critical"><td>academic_rules</td><td>No direct read</td><td>No</td><td>No</td><td>No</td><td>Student reads results through Express; admin writes through Express</td></tr>
+            <tr data-priority="recommended"><td>advisor_requests</td><td>Own requests</td><td>Own create or Express</td><td>Limited safe fields only</td><td>No</td><td>Status/assignment controlled by backend/advisor</td></tr>
+            <tr data-priority="required"><td>notifications</td><td>Own notifications</td><td>No</td><td>Own read_at only</td><td>No</td><td>Creation through Express/admin event</td></tr>
+            <tr data-priority="security"><td>audit_logs</td><td>No</td><td>No</td><td>No</td><td>No</td><td>Express/admin only</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </details>
+
+    <details id="security" open data-text="supabase security anon key service role key gemini backend rls express jwt storage policies admin documents students own records">
+      <summary>Supabase Security</summary>
+      <div class="body">
+        <ul>
+          <li><span class="badge security">SECURITY</span> Anon/publishable Supabase key may exist in the mobile app.</li>
+          <li><span class="badge critical">CRITICAL</span> Service-role key must never exist in the mobile app.</li>
+          <li><span class="badge critical">CRITICAL</span> Gemini API key remains backend-only.</li>
+          <li><span class="badge critical">CRITICAL</span> RLS enabled on all user-owned tables.</li>
+          <li><span class="badge security">SECURITY</span> Express verifies Supabase access tokens.</li>
+          <li><span class="badge security">SECURITY</span> Students read/write only their own permitted records.</li>
+          <li><span class="badge critical">CRITICAL</span> Academic document upload is admin-only through trusted backend credentials.</li>
+          <li><span class="badge security">SECURITY</span> Storage policies protect profile images and academic documents.</li>
+        </ul>
+      </div>
+    </details>
+
+    <details id="flow" open data-text="flow react native auth supabase express jwt profile ai chat rag academic rules database frontend response state">
+      <summary>End-to-End Flow Consistency</summary>
+      <div class="body">
+        <ol>
+          <li>React Native auth UI uses Supabase Auth for sign up, email verification, login, restore session, refresh session, forgot/reset password, and logout.</li>
+          <li>React Native sends Supabase access token to Express for protected business endpoints.</li>
+          <li>Express verifies JWT and maps `sub` to `student_profiles.user_id`.</li>
+          <li>Express labels profile context as SELF-DECLARED, UNVERIFIED, NOT CONNECTED TO UTAR SYSTEM.</li>
+          <li>Express runs AI Chat, RAG retrieval, Academic Rules, advisor escalation, and document processing.</li>
+          <li>Supabase PostgreSQL stores profiles, conversations, messages, sources, documents, chunks, rules, and optional FYP tables.</li>
+          <li>React Native handles answer status, citations, advisor actions, validation errors, loading and empty states.</li>
+        </ol>
+      </div>
+    </details>
+
+    <details id="future" open data-text="future university integration utar sso official portal synchronization verified academic records administrator managed read only">
+      <summary>Future University Integration</summary>
+      <div class="body">
+        <p>The current architecture is not connected to UTAR systems. Future integration may replace student-editable fields with official student portal synchronization, administrator-managed profiles, verified academic records, read-only institution-owned fields, and UTAR SSO. This is future scope, not current architecture.</p>
+      </div>
+    </details>
+
+    <details id="open" open data-text="remaining open decisions secure storage profile writes vector storage notifications admin ui deep link email reset">
+      <summary>Remaining Open Decisions</summary>
+      <div class="body table-scroll">
+        <table>
+          <thead><tr><th>Decision</th><th>Options</th></tr></thead>
+          <tbody>
+            <tr><td>React Native session storage</td><td>Supabase storage adapter vs secure storage package.</td></tr>
+            <tr><td>Profile writes</td><td>Direct Supabase own-row update vs Express-only validation endpoint.</td></tr>
+            <tr><td>Vector storage</td><td>Supabase pgvector vs existing external RAG vector implementation.</td></tr>
+            <tr><td>Notifications</td><td>Direct Supabase read/update vs Express-only API.</td></tr>
+            <tr><td>Admin UI</td><td>Separate web admin app vs API-only admin tooling.</td></tr>
+            <tr><td>Email/reset deep links</td><td>App deep link vs browser confirmation/reset page.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </details>
+  </main>
+
+  <script>
+    const search = document.getElementById('search');
+    const buttons = Array.from(document.querySelectorAll('[data-filter]'));
+    let active = 'all';
+    function textOf(node){ return ((node.dataset.text || '') + ' ' + (node.textContent || '')).toLowerCase(); }
+    function apply(){
+      const q = search.value.trim().toLowerCase();
+      document.querySelectorAll('main section, main details, tbody tr').forEach(node => {
+        const text = textOf(node);
+        const matchesText = !q || text.includes(q);
+        const matchesPriority = active === 'all' || text.includes(active);
+        node.classList.toggle('hidden', !(matchesText && matchesPriority));
+      });
+    }
+    search.addEventListener('input', apply);
+    buttons.forEach(button => button.addEventListener('click', () => {
+      active = button.dataset.filter;
+      buttons.forEach(b => b.classList.toggle('active', b === button));
+      apply();
+    }));
+  </script>
+</body>
+</html>
