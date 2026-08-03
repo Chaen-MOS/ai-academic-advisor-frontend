@@ -1,7 +1,7 @@
 import React from 'react';
 import {Pressable, StyleSheet, Text, View} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
-
+import {Settings, Pencil} from 'lucide-react-native';
 import {colors, spacing, typography} from '../../theme';
 import type {ProfileData} from '../../types/app';
 
@@ -36,7 +36,11 @@ export function ProfileHeader({
               accessibilityLabel="Open settings"
               onPress={onSettingsPress}
               style={styles.iconButton}>
-              <Text style={styles.icon}>set</Text>
+              <Settings
+                size={22}
+                strokeWidth={1.8}
+                color={colors.primaryText}
+              />
             </Pressable>
           ) : null}
         </View>
@@ -49,7 +53,11 @@ export function ProfileHeader({
                 accessibilityLabel="Edit profile"
                 hitSlop={spacing.xs}
                 onPress={onEditPress}>
-                <Text style={styles.editIcon}>edit</Text>
+                <Pencil
+                    size={18}
+                    strokeWidth={2}
+                    color={colors.primaryText}
+                />
               </Pressable>
             ) : null}
           </View>

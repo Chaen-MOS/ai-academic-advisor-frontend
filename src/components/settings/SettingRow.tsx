@@ -1,8 +1,8 @@
 import React from 'react';
 import {Pressable, StyleSheet, Text, View} from 'react-native';
-
 import {colors, spacing, typography} from '../../theme';
 import type {SettingRowItem} from '../../types/app';
+import {ChevronRight} from 'lucide-react-native';
 
 type SettingRowProps = {
   item: SettingRowItem;
@@ -10,6 +10,7 @@ type SettingRowProps = {
 };
 
 export function SettingRow({item, onPress}: SettingRowProps) {
+  const Icon = item.icon;
   return (
     <Pressable
       accessibilityRole="button"
@@ -18,11 +19,19 @@ export function SettingRow({item, onPress}: SettingRowProps) {
       style={({pressed}) => [styles.row, pressed && styles.pressed]}>
       <View style={styles.left}>
         <View style={styles.iconBox}>
-          <Text style={styles.icon}>{item.icon}</Text>
-        </View>
+            <Icon
+              size={20}
+              strokeWidth={1.8}
+              color={colors.primaryText}
+            />
+          </View>
         <Text style={styles.label}>{item.label}</Text>
       </View>
-      <Text style={styles.chevron}>{'>'}</Text>
+      <ChevronRight
+          size={18}
+          strokeWidth={2}
+          color={colors.secondaryText}
+      />
     </Pressable>
   );
 }

@@ -7,6 +7,7 @@ import {ProfileHeader} from '../components/profile/ProfileHeader';
 import {profileData} from '../data/mockData';
 import {colors, radius, spacing, typography} from '../theme';
 import type {RootStackParamList} from '../types/navigation';
+import {MessageCircle} from 'lucide-react-native';
 
 type ChatHistoryScreenProps = NativeStackScreenProps<
   RootStackParamList,
@@ -32,7 +33,11 @@ export default function ChatHistoryScreen({navigation}: ChatHistoryScreenProps) 
           accessibilityLabel="Start chat"
           onPress={() => navigation.navigate('Home')}
           style={({pressed}) => [styles.chatButton, pressed && styles.pressed]}>
-          <Text style={styles.chatIcon}>chat</Text>
+          <MessageCircle
+              size={22}
+              strokeWidth={1.8}
+              color={colors.primaryText}
+            />
           <Text style={styles.chatText}>Chat</Text>
         </Pressable>
       </View>

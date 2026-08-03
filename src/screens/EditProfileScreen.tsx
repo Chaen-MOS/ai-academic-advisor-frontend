@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import type {NativeStackScreenProps} from '@react-navigation/native-stack';
-
+import {ArrowLeft} from 'lucide-react-native';
 import {AcademicSelectField} from '../components/common/AcademicSelectField';
 import {PrimaryButton} from '../components/common/PrimaryButton';
 import {
@@ -54,9 +54,16 @@ export default function EditProfileScreen({navigation}: EditProfileScreenProps) 
             <Pressable
               accessibilityRole="button"
               accessibilityLabel="Go back"
-              onPress={navigation.goBack}
-              style={styles.backButton}>
-              <Text style={styles.backText}>back</Text>
+              onPress={() => navigation.goBack()}
+              style={({pressed}) => [
+                styles.backButton,
+                pressed && styles.pressed,
+              ]}>
+              <ArrowLeft
+                size={22}
+                strokeWidth={2}
+                color={colors.primaryText}
+              />
             </Pressable>
             <View style={styles.avatar}>
               <Text style={styles.avatarText}>A</Text>
@@ -200,11 +207,6 @@ const styles = StyleSheet.create({
     minHeight: 36,
     justifyContent: 'center',
   },
-  backText: {
-    ...typography.small,
-    color: colors.primaryText,
-    fontWeight: '700',
-  },
   avatar: {
     width: 86,
     height: 86,
@@ -265,5 +267,8 @@ const styles = StyleSheet.create({
   fieldLine: {
     height: StyleSheet.hairlineWidth,
     backgroundColor: colors.inputLine,
+  },
+  pressed: {
+    opacity: 0.6,
   },
 });

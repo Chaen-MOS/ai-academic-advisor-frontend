@@ -1,3 +1,5 @@
+import type {LucideIcon} from 'lucide-react-native';
+
 export type NotificationCategory =
   | 'All'
   | 'Courses'
@@ -28,7 +30,7 @@ export type ProfileData = {
 export type SettingRowItem = {
   id: string;
   label: string;
-  icon: string;
+  icon: LucideIcon;
   target?: 'EditProfile' | 'Notifications';
 };
 

@@ -1,6 +1,6 @@
 import React from 'react';
 import {Pressable, StyleSheet, Text, View} from 'react-native';
-
+import {ArrowUpRight} from 'lucide-react-native';
 import {colors, radius, spacing, typography} from '../../theme';
 
 type QuickQuestionButtonProps = {
@@ -17,7 +17,13 @@ export function QuickQuestionButton({label, onPress}: QuickQuestionButtonProps) 
       style={({pressed}) => [styles.button, pressed && styles.pressed]}>
       <Text style={styles.label}>{label}</Text>
       <View style={styles.iconCircle}>
-        <Text style={styles.icon}>go</Text>
+        <View>
+          <ArrowUpRight
+            size={18}
+            strokeWidth={1.8}
+            color={colors.primaryText}
+          />
+        </View>
       </View>
     </Pressable>
   );

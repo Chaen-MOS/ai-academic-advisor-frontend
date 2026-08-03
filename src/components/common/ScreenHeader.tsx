@@ -1,61 +1,95 @@
 import React from 'react';
 import {Pressable, StyleSheet, Text, View} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
-
+import {
+  Bell,
+  Menu,
+  Settings,
+  ArrowLeft,
+  type LucideIcon,
+} from 'lucide-react-native';
 import {colors, spacing, typography} from '../../theme';
+
+type HeaderIconName =
+  | 'menu'
+  | 'bell'
+  | 'settings'
+  | 'back';
 
 type ScreenHeaderProps = {
   title?: string;
-  leftLabel?: string;
-  rightLabel?: string;
+  leftIcon?: HeaderIconName;
+  rightIcon?: HeaderIconName;
   onBackPress?: () => void;
   onLeftPress?: () => void;
   onRightPress?: () => void;
   cyan?: boolean;
 };
 
+const iconMap: Record<HeaderIconName, LucideIcon> = {
+  menu: Menu,
+  bell: Bell,
+  settings: Settings,
+  back: ArrowLeft,
+};
+
 export function ScreenHeader({
   title,
-  leftLabel = '<',
-  rightLabel,
+  leftIcon,
+  rightIcon,
   onBackPress,
   onLeftPress,
   onRightPress,
   cyan = false,
 }: ScreenHeaderProps) {
-  const handleLeftPress = onBackPress ?? onLeftPress;
+  const LeftIcon = leftIcon ? iconMap[leftIcon] : null;
+  const RightIcon = rightIcon ? iconMap[rightIcon] : null;
 
   return (
     <SafeAreaView edges={['top']} style={cyan && styles.cyanArea}>
       <View style={[styles.container, cyan && styles.cyanContainer]}>
-        <View style={styles.side}>
-          {handleLeftPress ? (
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel={onBackPress ? 'Go back' : 'Open menu'}
-              hitSlop={spacing.sm}
-              onPress={handleLeftPress}
-              style={styles.iconButton}>
-              <Text style={styles.iconText}>{leftLabel}</Text>
-            </Pressable>
-          ) : null}
-        </View>
+        <View style={styles.iconSlot}>
+        {LeftIcon ? (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={leftIcon}
+            hitSlop={spacing.sm}
+            onPress={onLeftPress}
+            style={({pressed}) => [
+              styles.iconButton,
+              pressed && styles.pressed,
+            ]}>
+            <LeftIcon
+              size={22}
+              strokeWidth={1.8}
+              color={colors.primaryText}
+            />
+          </Pressable>
+        ) : null}
+      </View>
 
         {title ? <Text style={styles.title}>{title}</Text> : <View style={styles.title} />}
 
-        <View style={styles.side}>
-          {rightLabel && onRightPress ? (
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel={rightLabel}
-              hitSlop={spacing.sm}
-              onPress={onRightPress}
-              style={styles.iconButton}>
-              <Text style={styles.iconText}>{rightLabel}</Text>
-            </Pressable>
-          ) : null}
-        </View>
+        <View style={styles.iconSlot}>
+        {RightIcon ? (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={rightIcon}
+            hitSlop={spacing.sm}
+            onPress={onRightPress}
+            style={({pressed}) => [
+              styles.iconButton,
+              pressed && styles.pressed,
+            ]}>
+            <RightIcon
+              size={22}
+              strokeWidth={1.8}
+              color={colors.primaryText}
+            />
+          </Pressable>
+        ) : null}
       </View>
+    </View>
     </SafeAreaView>
   );
 }
@@ -80,8 +114,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   iconButton: {
-    width: 36,
-    height: 36,
+    width: 40,
+    height: 40,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -97,5 +131,14 @@ const styles = StyleSheet.create({
     color: colors.primaryText,
     fontWeight: '700',
     textAlign: 'center',
+  },
+  iconSlot: {
+    width: 44,
+    height: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  pressed: {
+    opacity: 0.6,
   },
 });

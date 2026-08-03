@@ -19,6 +19,7 @@ import {quickQuestions} from '../data/mockData';
 import {sendChatMessage} from '../services/chatApi';
 import {colors, radius, spacing, typography} from '../theme';
 import type {RootStackParamList} from '../types/navigation';
+import {SendHorizontal} from 'lucide-react-native';
 
 type HomeScreenProps = NativeStackScreenProps<RootStackParamList, 'Home'>;
 
@@ -135,8 +136,8 @@ export default function AcademicAdvisorHomeScreen({
         style={styles.screen}>
         <ScreenHeader
           cyan
-          leftLabel="menu"
-          rightLabel="bell"
+          leftIcon="menu"
+          rightIcon="bell"
           onLeftPress={() => navigation.navigate('ChatHistory')}
           onRightPress={() => navigation.navigate('Notifications')}
         />
@@ -215,9 +216,20 @@ export default function AcademicAdvisorHomeScreen({
                 pressed && styles.pressed,
                 (isSending || !message.trim()) && styles.disabledButton,
               ]}>
-              <Text style={styles.sendText}>
-                {isSending ? '...' : 'send'}
-              </Text>
+              {isSending ? (
+                <ActivityIndicator
+                  size="small"
+                  color={colors.primaryText}
+                />
+              ) : (
+                <View style={styles.iconOffset}>
+                  <SendHorizontal
+                    size={19}
+                    strokeWidth={1.8}
+                    color={colors.primaryText}
+                  />
+                </View>
+              )}
             </Pressable>
           </View>
         </View>
@@ -379,10 +391,12 @@ const styles = StyleSheet.create({
     paddingVertical: 0,
   },
   sendButton: {
-    minWidth: 48,
-    minHeight: 36,
+    width: 40,
+    height: 40,
     alignItems: 'center',
     justifyContent: 'center',
+    padding: 0,
+    margin: 0,
   },
   sendText: {
     ...typography.small,
@@ -394,6 +408,9 @@ const styles = StyleSheet.create({
   },
   disabledButton: {
     opacity: 0.4,
+  },
+  iconOffset: {
+    transform: [{translateY: 1}],
   },
 });
 

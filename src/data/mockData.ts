@@ -5,6 +5,15 @@ import type {
   SelectorOption,
   SettingRowItem,
 } from '../types/app';
+import {
+  Bell,
+  Brain,
+  CircleHelp,
+  FileText,
+  KeyRound,
+  UserRound,
+  type LucideIcon,
+} from 'lucide-react-native';
 
 export const quickQuestions = [
   'Attendance issue',
@@ -74,18 +83,18 @@ export const settingsSections: {
   {
     title: 'ACCOUNT',
     rows: [
-      {id: 'profile', label: 'Profile', icon: 'person', target: 'EditProfile'},
-      {id: 'password', label: 'Change Password', icon: 'lock'},
+      {id: 'profile', label: 'Profile', icon: UserRound, target: 'EditProfile'},
+      {id: 'password', label: 'Change Password', icon: KeyRound},
     ],
   },
   {
     title: 'PREFERENCES',
     rows: [
-      {id: 'memory', label: 'Chat Memory', icon: 'memory'},
+      {id: 'memory', label: 'Chat Memory', icon: Brain},
       {
         id: 'notifications',
         label: 'Notifications',
-        icon: 'bell',
+        icon: Bell,
         target: 'Notifications',
       },
     ],
@@ -93,8 +102,8 @@ export const settingsSections: {
   {
     title: 'SUPPORT',
     rows: [
-      {id: 'terms', label: 'Terms & Conditions', icon: 'doc'},
-      {id: 'help', label: 'Help Center', icon: 'help'},
+      {id: 'terms', label: 'Terms & Conditions', icon: FileText},
+      {id: 'help', label: 'Help Center', icon: CircleHelp},
     ],
   },
 ];

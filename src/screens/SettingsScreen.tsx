@@ -10,7 +10,7 @@ import {profileData, settingsSections} from '../data/mockData';
 import {colors, radius, spacing, typography} from '../theme';
 import type {SettingRowItem} from '../types/app';
 import type {RootStackParamList} from '../types/navigation';
-
+import {LogOut} from 'lucide-react-native';
 type SettingsScreenProps = NativeStackScreenProps<RootStackParamList, 'Settings'>;
 
 export default function SettingsScreen({navigation}: SettingsScreenProps) {
@@ -64,7 +64,10 @@ export default function SettingsScreen({navigation}: SettingsScreenProps) {
           accessibilityLabel="Log out"
           onPress={handleLogout}
           style={({pressed}) => [styles.logoutButton, pressed && styles.pressed]}>
-          <Text style={styles.logoutIcon}>logout</Text>
+          <LogOut size={20}
+                strokeWidth={1.8}
+                color={colors.primaryText}
+            />
           <Text style={styles.logoutText}>Log out</Text>
         </Pressable>
       </ScrollView>
