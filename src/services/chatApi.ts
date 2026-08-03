@@ -1,20 +1,33 @@
 import {API_BASE_URL} from '../config/api';
+import {supabase} from '../config/supabase';
 
 export type ChatApiResponse = {
   answer: string;
 };
 
 export async function sendChatMessage(
-  studentId: string,
   message: string,
 ): Promise<ChatApiResponse> {
+  const {
+    data: {session},
+    error: sessionError,
+  } = await supabase.auth.getSession();
+
+  if (sessionError) {
+    throw new Error(sessionError.message);
+  }
+
+  if (!session?.access_token) {
+    throw new Error('You must be signed in to send a message.');
+  }
+
   const response = await fetch(`${API_BASE_URL}/api/chat`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
+      Authorization: `Bearer ${session.access_token}`,
     },
     body: JSON.stringify({
-      studentId,
       message,
     }),
   });
@@ -23,13 +36,10 @@ export async function sendChatMessage(
 
   if (!response.ok) {
     throw new Error(
-      responseText || `Chat request failed with status ${response.status}`,
+      responseText ||
+        `Chat request failed with status ${response.status}`,
     );
   }
 
-  try {
-    return JSON.parse(responseText) as ChatApiResponse;
-  } catch {
-    throw new Error('The backend returned invalid JSON.');
-  }
+  return JSON.parse(responseText) as ChatApiResponse;
 }

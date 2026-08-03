@@ -69,7 +69,7 @@ export default function AcademicAdvisorHomeScreen({
     setIsSending(true);
 
     try {
-      const result = await sendChatMessage('2201234', trimmedMessage);
+      const result = await sendChatMessage(trimmedMessage);
 
       const assistantMessage: ChatMessage = {
         id: `assistant-${Date.now()}`,
