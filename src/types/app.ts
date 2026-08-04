@@ -25,6 +25,7 @@ export type ProfileData = {
   yearLevel: string;
   academicStatus: string;
   notificationPreference: string;
+  avatar_url: string | null;
 };
 
 export type SettingRowItem = {

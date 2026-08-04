@@ -28,15 +28,19 @@ export function PrimaryButton({
 }: PrimaryButtonProps) {
   const isWhite = variant === 'white';
   const isAccent = variant === 'accent';
+  const isCyan = variant === 'cyan';
 
   return (
-   <Pressable
+    <Pressable
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel}
       onPress={onPress}
       disabled={disabled}
       style={({pressed}) => [
         styles.button,
+        isCyan && styles.cyanButton,
+        isWhite && styles.whiteButton,
+        isAccent && styles.accentButton,
         style,
         pressed && !disabled && styles.pressed,
         disabled && styles.disabled,

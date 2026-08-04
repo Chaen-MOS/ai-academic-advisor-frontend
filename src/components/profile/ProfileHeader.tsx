@@ -1,12 +1,21 @@
 import React from 'react';
-import {Pressable, StyleSheet, Text, View} from 'react-native';
+import {
+  Image,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
-import {Settings, Pencil} from 'lucide-react-native';
+import {Pencil, Settings} from 'lucide-react-native';
+
 import {colors, spacing, typography} from '../../theme';
 import type {ProfileData} from '../../types/app';
 
 type ProfileHeaderProps = {
-  profile: Pick<ProfileData, 'name' | 'email'>;
+  profile: Pick<ProfileData, 'name' | 'email'> & {
+    avatarUrl?: string | null;
+  };
   title?: string;
   showSettings?: boolean;
   showEdit?: boolean;
@@ -22,46 +31,85 @@ export function ProfileHeader({
   onSettingsPress,
   onEditPress,
 }: ProfileHeaderProps) {
+  const displayName = profile.name.trim() || 'Student';
+  const avatarInitial =
+    displayName.charAt(0).toUpperCase() || '?';
+
   return (
     <SafeAreaView edges={['top']} style={styles.safeArea}>
       <View style={styles.container}>
-        {title ? <Text style={styles.screenTitle}>{title}</Text> : null}
+        {title ? (
+          <Text style={styles.screenTitle}>{title}</Text>
+        ) : null}
+
         <View style={styles.topRow}>
           <View style={styles.avatar}>
-            <Text style={styles.avatarText}>A</Text>
+            {profile.avatarUrl ? (
+              <Image
+                source={{uri: profile.avatarUrl}}
+                style={styles.avatarImage}
+                resizeMode="cover"
+              />
+            ) : (
+              <Text style={styles.avatarText}>
+                {avatarInitial}
+              </Text>
+            )}
           </View>
+
           {showSettings ? (
             <Pressable
               accessibilityRole="button"
               accessibilityLabel="Open settings"
+              hitSlop={spacing.xs}
               onPress={onSettingsPress}
-              style={styles.iconButton}>
+              style={({pressed}) => [
+                styles.iconButton,
+                pressed && styles.pressed,
+              ]}>
               <Settings
                 size={22}
                 strokeWidth={1.8}
                 color={colors.primaryText}
               />
             </Pressable>
-          ) : null}
+          ) : (
+            <View style={styles.iconButtonPlaceholder} />
+          )}
         </View>
+
         <View style={styles.infoArea}>
           <View style={styles.nameRow}>
-            <Text style={styles.name}>{profile.name}</Text>
+            <Text
+              style={styles.name}
+              numberOfLines={1}>
+              {displayName}
+            </Text>
+
             {showEdit ? (
               <Pressable
                 accessibilityRole="button"
                 accessibilityLabel="Edit profile"
                 hitSlop={spacing.xs}
-                onPress={onEditPress}>
+                onPress={onEditPress}
+                style={({pressed}) => [
+                  styles.editButton,
+                  pressed && styles.pressed,
+                ]}>
                 <Pencil
-                    size={18}
-                    strokeWidth={2}
-                    color={colors.primaryText}
+                  size={18}
+                  strokeWidth={2}
+                  color={colors.primaryText}
                 />
               </Pressable>
             ) : null}
           </View>
-          <Text style={styles.email}>{profile.email}</Text>
+
+          <Text
+            style={styles.email}
+            numberOfLines={1}>
+            {profile.email}
+          </Text>
         </View>
       </View>
     </SafeAreaView>
@@ -95,14 +143,20 @@ const styles = StyleSheet.create({
     width: 74,
     height: 74,
     borderRadius: 37,
+    overflow: 'hidden',
     backgroundColor: colors.white,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  avatarImage: {
+    width: '100%',
+    height: '100%',
   },
   avatarText: {
     color: colors.accent,
     fontSize: 36,
     lineHeight: 40,
+    fontWeight: '700',
   },
   iconButton: {
     width: 42,
@@ -110,10 +164,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  icon: {
-    color: colors.accent,
-    fontSize: 28,
-    lineHeight: 30,
+  iconButtonPlaceholder: {
+    width: 42,
+    height: 42,
+  },
+  editButton: {
+    width: 32,
+    height: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   infoArea: {
     marginTop: spacing.lg,
@@ -124,19 +183,19 @@ const styles = StyleSheet.create({
     gap: spacing.xs,
   },
   name: {
+    flexShrink: 1,
     fontSize: 22,
     lineHeight: 27,
     fontWeight: '700',
     color: colors.primaryText,
-  },
-  editIcon: {
-    color: colors.primaryText,
-    fontSize: 18,
   },
   email: {
     ...typography.body,
     marginTop: spacing.xs,
     color: colors.secondaryText,
     fontWeight: '500',
+  },
+  pressed: {
+    opacity: 0.6,
   },
 });
