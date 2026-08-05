@@ -36,6 +36,13 @@ export type ChatApiResponse = {
   assistantMessage: ApiMessage;
 };
 
+export type ChatApiError = Error & {
+  code?: string;
+  conversationId?: string;
+  userMessageId?: string;
+  assistantMessageId?: string;
+};
+
 async function getAccessToken(): Promise<string> {
   const {
     data: {session},
@@ -82,14 +89,29 @@ export async function sendChatMessage(
   const body = await response.json();
 
   if (!response.ok) {
-    throw new Error(
-      `HTTP ${response.status}: ${JSON.stringify(body)}`,
-    );
+    const apiError = new Error(
+      body.message ??
+        body.error ??
+        `Unable to send chat message. HTTP ${response.status}`,
+    ) as ChatApiError;
+
+    apiError.code = body.code;
+    apiError.conversationId = body.conversationId;
+    apiError.userMessageId = body.userMessageId;
+    apiError.assistantMessageId = body.assistantMessageId;
+
+    throw apiError;
   }
 
   if (!body?.conversation?.id) {
     throw new Error(
       `INVALID RESPONSE: ${JSON.stringify(body)}`,
+    );
+  }
+
+  if (!body?.assistantMessage?.id) {
+    throw new Error(
+      `INVALID ASSISTANT RESPONSE: ${JSON.stringify(body)}`,
     );
   }
 

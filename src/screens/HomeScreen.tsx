@@ -1,4 +1,4 @@
-import React, {useRef, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -16,10 +16,14 @@ import Markdown from 'react-native-markdown-display';
 import {ScreenHeader} from '../components/common/ScreenHeader';
 import {QuickQuestionButton} from '../components/home/QuickQuestionButton';
 import {quickQuestions} from '../data/mockData';
-import {sendChatMessage} from '../services/chatApi';
+import {sendChatMessage, type ChatApiError,} from '../services/chatApi';
 import {colors, radius, spacing, typography} from '../theme';
 import type {RootStackParamList} from '../types/navigation';
-import {SendHorizontal} from 'lucide-react-native';
+import {RotateCcw,SendHorizontal} from 'lucide-react-native';
+import {getConversationMessages, retryAssistantMessage} from '../services/conversationApi';
+
+
+
 
 type HomeScreenProps = NativeStackScreenProps<RootStackParamList, 'Home'>;
 
@@ -28,10 +32,12 @@ type ChatMessage = {
   role: 'user' | 'assistant';
   content: string;
   status: 'completed' | 'failed';
+  isRetrying?: boolean;
 };
 
 export default function AcademicAdvisorHomeScreen({
   navigation,
+  route,
 }: HomeScreenProps) {
   const [message, setMessage] = useState('');
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
@@ -39,11 +45,92 @@ export default function AcademicAdvisorHomeScreen({
   const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
   const listRef = useRef<FlatList<ChatMessage>>(null);
   const hasConversation = chatMessages.length > 0;
+  const [isLoadingConversation, setIsLoadingConversation] = useState(false);
+  const handleQuickQuestionPress = (question: string) => { setMessage(question); };
+  useEffect(() => {
+  const routeConversationId =
+    route.params?.conversationId;
 
-  const handleQuickQuestionPress = (question: string) => {
-    setMessage(question);
+  if (
+    typeof routeConversationId !== 'string' ||
+    !routeConversationId
+  ) {
+    return;
+  }
+
+  let isMounted = true;
+
+  async function loadConversation(
+    conversationId: string,
+  ) {
+    try {
+      setIsLoadingConversation(true);
+
+      const result =
+        await getConversationMessages(
+          conversationId,
+        );
+
+      if (!isMounted) {
+        return;
+      }
+
+      const loadedMessages: ChatMessage[] =
+        result.messages
+          .filter(
+            item =>
+              item.processingStatus === 'COMPLETED' ||
+              item.processingStatus === 'FAILED',
+          )
+          .map(item => ({
+            id: item.id,
+            role:
+              item.role === 'USER'
+                ? 'user'
+                : 'assistant',
+            content:
+              item.content ||
+              (item.processingStatus === 'FAILED'
+                ? 'The previous response failed. Please try again.'
+                : ''),
+            status:
+              item.processingStatus === 'FAILED'
+                ? 'failed'
+                : 'completed',
+          }));
+
+      setCurrentConversationId(
+        result.conversation.id,
+      );
+
+      setChatMessages(loadedMessages);
+    } catch (error) {
+      console.error(
+        'Unable to load conversation:',
+        error,
+      );
+    } finally {
+      if (isMounted) {
+        setIsLoadingConversation(false);
+      }
+    }
+  }
+
+  void loadConversation(routeConversationId);
+
+  return () => {
+    isMounted = false;
   };
+}, [route.params?.conversationId]);
+  const handleNewChat = () => {
+    setCurrentConversationId(null);
+    setChatMessages([]);
+    setMessage('');
 
+    navigation.setParams({
+      conversationId: undefined,
+    });
+  };
   const handleSubmitMessage = async () => {
     const trimmedMessage = message.trim();
 
@@ -104,42 +191,110 @@ export default function AcademicAdvisorHomeScreen({
         assistantMessage,
       ]);
     } catch (error) {
-      const failedMessage: ChatMessage = {
-        id: `failed-${Date.now()}`,
-        role: 'assistant',
-        content:
-          'I could not connect to the academic advisor service. Please try again.',
-        status: 'failed',
-      };
+        const apiError = error as ChatApiError;
 
-      setChatMessages(previous => [...previous, failedMessage]);
+        if (apiError.conversationId) {
+          setCurrentConversationId(apiError.conversationId);
+        }
 
-      console.error(
-        'Chat request failed:',
-        error instanceof Error ? error.message : error,
+        const failedMessage: ChatMessage = {
+          id:
+            apiError.assistantMessageId ??
+            `failed-${Date.now()}`,
+          role: 'assistant',
+          content:
+            'I could not connect to the academic advisor service. Please try again.',
+          status: 'failed',
+        };
+
+        setChatMessages(previous => [
+          ...previous,
+          failedMessage,
+        ]);
+
+        console.error(
+          'Chat request failed:',
+          apiError.message,
+        );
+      } finally {
+        setIsSending(false);
+      }
+  };
+
+  const handleRetry = async (
+    assistantMessageId: string,
+  ) => {
+    if (!currentConversationId) {
+      return;
+    }
+
+    try {
+      setChatMessages(current =>
+        current.map(item =>
+          item.id === assistantMessageId
+            ? {...item, isRetrying: true}
+            : item,
+        ),
       );
-    } finally {
-      setIsSending(false);
+
+      const retried =
+        await retryAssistantMessage(
+          currentConversationId,
+          assistantMessageId,
+        );
+
+      setChatMessages(current =>
+        current.map(item =>
+          item.id === assistantMessageId
+            ? {
+                id: retried.id,
+                role: 'assistant',
+                content: retried.content,
+                status: 'completed',
+                isRetrying: false,
+              }
+            : item,
+        ),
+      );
+    } catch (error) {
+      setChatMessages(current =>
+        current.map(item =>
+          item.id === assistantMessageId
+            ? {...item, isRetrying: false}
+            : item,
+        ),
+      );
     }
   };
 
   const renderMessage = ({item}: {item: ChatMessage}) => {
     const isUser = item.role === 'user';
+    const isFailedAssistant =
+      !isUser && item.status === 'failed';
 
     return (
       <View
         style={[
           styles.messageRow,
-          isUser ? styles.userMessageRow : styles.assistantMessageRow,
+          isUser
+            ? styles.userMessageRow
+            : styles.assistantMessageRow,
         ]}>
         <View
           style={[
             styles.messageBubble,
-            isUser ? styles.userBubble : styles.assistantBubble,
-            item.status === 'failed' && styles.failedBubble,
+            isUser
+              ? styles.userBubble
+              : styles.assistantBubble,
+            item.status === 'failed' &&
+              styles.failedBubble,
           ]}>
           {isUser ? (
-            <Text style={[styles.messageText, styles.userMessageText]}>
+            <Text
+              style={[
+                styles.messageText,
+                styles.userMessageText,
+              ]}>
               {item.content}
             </Text>
           ) : (
@@ -148,6 +303,41 @@ export default function AcademicAdvisorHomeScreen({
             </Markdown>
           )}
         </View>
+
+        {isFailedAssistant ? (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Retry failed response"
+            disabled={item.isRetrying}
+            onPress={() => handleRetry(item.id)}
+            style={({pressed}) => [
+              styles.retryMessageButton,
+              pressed &&
+                !item.isRetrying &&
+                styles.pressed,
+              item.isRetrying &&
+                styles.retryMessageButtonDisabled,
+            ]}>
+            {item.isRetrying ? (
+              <ActivityIndicator
+                size="small"
+                color={colors.secondaryText}
+              />
+            ) : (
+              <RotateCcw
+                size={15}
+                strokeWidth={2}
+                color={colors.secondaryText}
+              />
+            )}
+
+            <Text style={styles.retryMessageText}>
+              {item.isRetrying
+                ? 'Retrying...'
+                : 'Retry'}
+            </Text>
+          </Pressable>
+        ) : null}
       </View>
     );
   };
@@ -165,7 +355,17 @@ export default function AcademicAdvisorHomeScreen({
           onRightPress={() => navigation.navigate('Notifications')}
         />
 
-        {!hasConversation ? (
+        {isLoadingConversation ? (
+          <View style={styles.centerArea}>
+            <ActivityIndicator
+              size="large"
+              color={colors.accent}
+            />
+            <Text style={styles.loadingConversationText}>
+              Loading conversation...
+            </Text>
+          </View>
+        ) : !hasConversation ? (
           <View style={styles.content}>
             <View style={styles.greetingArea}>
               <Text style={styles.greeting}>
@@ -224,20 +424,31 @@ export default function AcademicAdvisorHomeScreen({
               placeholderTextColor={colors.mutedText}
               returnKeyType="send"
               selectionColor={colors.accent}
-              editable={!isSending}
+              editable={
+                !isSending &&
+                !isLoadingConversation
+              }
               style={styles.input}
             />
 
             <Pressable
               accessibilityRole="button"
               accessibilityLabel="Send message"
-              disabled={isSending || !message.trim()}
+              disabled={
+                isSending ||
+                isLoadingConversation ||
+                !message.trim()
+              }
               hitSlop={spacing.xs}
               onPress={handleSubmitMessage}
               style={({pressed}) => [
                 styles.sendButton,
                 pressed && styles.pressed,
-                (isSending || !message.trim()) && styles.disabledButton,
+                (
+                  isSending ||
+                  isLoadingConversation ||
+                  !message.trim()
+                ) && styles.disabledButton,
               ]}>
               {isSending ? (
                 <ActivityIndicator
@@ -304,6 +515,18 @@ const styles = StyleSheet.create({
   screen: {
     flex: 1,
     backgroundColor: colors.background,
+  },
+
+  centerArea: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  loadingConversationText: {
+    ...typography.body,
+    marginTop: spacing.sm,
+    color: colors.secondaryText,
   },
 
   content: {
@@ -435,5 +658,28 @@ const styles = StyleSheet.create({
   iconOffset: {
     transform: [{translateY: 1}],
   },
-});
+  retryMessageButton: {
+    marginTop: spacing.xs,
+    minHeight: 30,
+    alignSelf: 'flex-start',
+    borderRadius: radius.pill,
+    borderWidth: 1,
+    borderColor: colors.divider,
+    backgroundColor: colors.white,
+    paddingHorizontal: spacing.sm,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.xxs,
+  },
 
+  retryMessageButtonDisabled: {
+    opacity: 0.6,
+  },
+
+  retryMessageText: {
+    ...typography.small,
+    color: colors.secondaryText,
+    fontWeight: '700',
+  },
+});

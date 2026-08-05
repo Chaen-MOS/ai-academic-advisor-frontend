@@ -8,7 +8,11 @@ export type RootStackParamList = {
   Login: undefined;
   SignUp: undefined;
   ForgotPassword: undefined;
-  Home: undefined;
+  Home:
+  | {
+      conversationId?: string;
+    }
+  | undefined;
   ChatHistory: undefined;
   Settings: undefined;
   Notifications: undefined;
