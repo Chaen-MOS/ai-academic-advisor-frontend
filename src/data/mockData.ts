@@ -31,6 +31,7 @@ export const profileData: ProfileData = {
   yearLevel: 'Year 2',
   academicStatus: 'Full-time',
   notificationPreference: 'Course updates and deadlines',
+  avatar_url: null,
 };
 
 export const notificationCategories: NotificationCategory[] = [

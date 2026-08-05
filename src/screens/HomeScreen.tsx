@@ -36,9 +36,8 @@ export default function AcademicAdvisorHomeScreen({
   const [message, setMessage] = useState('');
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [isSending, setIsSending] = useState(false);
-
+  const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
   const listRef = useRef<FlatList<ChatMessage>>(null);
-
   const hasConversation = chatMessages.length > 0;
 
   const handleQuickQuestionPress = (question: string) => {
@@ -70,16 +69,40 @@ export default function AcademicAdvisorHomeScreen({
     setIsSending(true);
 
     try {
-      const result = await sendChatMessage(trimmedMessage);
+      const result = await sendChatMessage(
+        trimmedMessage,
+        currentConversationId,
+      );
+
+      if (!result?.conversation?.id) {
+        console.error('Unexpected chat API response:', result);
+        throw new Error(
+          'The chat API returned an invalid conversation response.',
+        );
+      }
+
+      if (!result?.assistantMessage?.content) {
+        console.error('Missing assistant message:', result);
+        throw new Error(
+          'The chat API did not return an assistant response.',
+        );
+      }
+
+      setCurrentConversationId(result.conversation.id);
 
       const assistantMessage: ChatMessage = {
-        id: `assistant-${Date.now()}`,
+        id:
+          result.assistantMessage.id ??
+          `assistant-${Date.now()}`,
         role: 'assistant',
-        content: result.answer,
+        content: result.assistantMessage.content,
         status: 'completed',
       };
 
-      setChatMessages(previous => [...previous, assistantMessage]);
+      setChatMessages(previous => [
+        ...previous,
+        assistantMessage,
+      ]);
     } catch (error) {
       const failedMessage: ChatMessage = {
         id: `failed-${Date.now()}`,
