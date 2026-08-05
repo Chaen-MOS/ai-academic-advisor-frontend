@@ -9,16 +9,33 @@ type SettingSectionProps = {
   title: string;
   rows: SettingRowItem[];
   onRowPress?: (item: SettingRowItem) => void;
+  chatMemoryEnabled: boolean;
+  onToggleChatMemory: (value: boolean) => void;
 };
 
-export function SettingSection({title, rows, onRowPress}: SettingSectionProps) {
+export function SettingSection({
+  title,
+  rows,
+  onRowPress,
+  chatMemoryEnabled,
+  onToggleChatMemory,
+}: SettingSectionProps) {
   return (
     <View style={styles.card}>
       <Text style={styles.title}>{title}</Text>
+
       {rows.map((row, index) => (
         <View key={row.id}>
-          <SettingRow item={row} onPress={onRowPress} />
-          {index < rows.length - 1 ? <View style={styles.divider} /> : null}
+          <SettingRow
+            item={row}
+            onPress={onRowPress}
+            chatMemoryEnabled={chatMemoryEnabled}
+            onToggleChatMemory={onToggleChatMemory}
+          />
+
+          {index < rows.length - 1 ? (
+            <View style={styles.divider} />
+          ) : null}
         </View>
       ))}
     </View>

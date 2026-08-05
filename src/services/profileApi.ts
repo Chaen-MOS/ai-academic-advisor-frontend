@@ -23,6 +23,7 @@ export type StudentProfile = {
   avatar_url: string | null;
   profile_source: 'SELF_DECLARED';
   is_verified: boolean;
+  chat_memory_enabled: boolean;
 };
 
 type ProfileResponse = {
@@ -85,6 +86,7 @@ export async function updateProfile(
     totalCreditsRequired: number | null;
     mobileNumber: string | null;
     avatarUrl: string | null;
+    chatMemoryEnabled: boolean;
   }>,
 ): Promise<ProfileResponse> {
   const token = await getAccessToken();

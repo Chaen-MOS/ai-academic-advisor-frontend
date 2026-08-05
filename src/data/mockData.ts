@@ -91,7 +91,12 @@ export const settingsSections: {
   {
     title: 'PREFERENCES',
     rows: [
-      {id: 'memory', label: 'Chat Memory', icon: Brain},
+      {
+        id: 'memory',
+        label: 'Chat Memory',
+        icon: Brain,
+        type: 'switch',
+      },
       {
         id: 'notifications',
         label: 'Notifications',

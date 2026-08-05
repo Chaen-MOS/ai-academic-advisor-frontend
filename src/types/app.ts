@@ -33,6 +33,7 @@ export type SettingRowItem = {
   label: string;
   icon: LucideIcon;
   target?: 'EditProfile' | 'Notifications';
+  type?: 'navigation' | 'switch';
 };
 
 export type SelectorOption = {

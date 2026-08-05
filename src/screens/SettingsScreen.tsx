@@ -7,17 +7,17 @@ import {
   StyleSheet,
   Text,
   View,
+  Switch,
 } from 'react-native';
 import {useFocusEffect} from '@react-navigation/native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import type {NativeStackScreenProps} from '@react-navigation/native-stack';
 import {LogOut} from 'lucide-react-native';
-
 import {useAuth} from '../contexts/AuthContext';
 import {ProfileHeader} from '../components/profile/ProfileHeader';
 import {SettingSection} from '../components/settings/SettingSection';
 import {settingsSections} from '../data/mockData';
-import {getProfile} from '../services/profileApi';
+import {getProfile, updateProfile} from '../services/profileApi';
 import {colors, radius, spacing, typography} from '../theme';
 import type {SettingRowItem} from '../types/app';
 import type {RootStackParamList} from '../types/navigation';
@@ -37,7 +37,7 @@ export default function SettingsScreen({
   navigation,
 }: SettingsScreenProps) {
   const {logout, user} = useAuth();
-
+  const [chatMemoryEnabled, setChatMemoryEnabled] = useState(true);
   const [profile, setProfile] = useState<HeaderProfile>({
     name:
       user?.user_metadata?.username ??
@@ -75,6 +75,9 @@ export default function SettingsScreen({
           email: user?.email ?? '',
           avatarUrl: storedProfile.avatar_url ?? null,
         });
+        setChatMemoryEnabled(
+          storedProfile.chat_memory_enabled,
+        );
         } catch (error) {
           console.error('Failed to load settings profile:', error);
 
@@ -134,6 +137,27 @@ export default function SettingsScreen({
     }
   }
 
+  const handleToggleMemory = async (
+    value: boolean,
+  ) => {
+    
+    setChatMemoryEnabled(value);
+
+    try {
+      await updateProfile({
+        chatMemoryEnabled: value,
+      });
+    } catch (error) {
+  
+      setChatMemoryEnabled(!value);
+
+      console.error(
+        'Failed to update chat memory setting:',
+        error,
+      );
+    }
+  };
+
   return (
     <SafeAreaView edges={['bottom']} style={styles.screen}>
       {isLoadingProfile ? (
@@ -163,6 +187,8 @@ export default function SettingsScreen({
             title={section.title}
             rows={section.rows}
             onRowPress={handleRowPress}
+            chatMemoryEnabled={chatMemoryEnabled}
+            onToggleChatMemory={handleToggleMemory}
           />
         ))}
 
