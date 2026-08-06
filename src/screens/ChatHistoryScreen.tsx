@@ -261,24 +261,6 @@ export default function ChatHistoryScreen({
       <View style={styles.content}>
         <View style={styles.titleRow}>
           <Text style={styles.title}>Chat history</Text>
-
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel="Open settings"
-            hitSlop={spacing.sm}
-            onPress={() =>
-              navigation.navigate('Settings')
-            }
-            style={({pressed}) => [
-              styles.iconButton,
-              pressed && styles.pressed,
-            ]}>
-            <Settings
-              size={22}
-              strokeWidth={1.8}
-              color={colors.primaryText}
-            />
-          </Pressable>
         </View>
 
         {isLoading ? (

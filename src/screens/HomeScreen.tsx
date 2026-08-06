@@ -31,7 +31,7 @@ type ChatMessage = {
   id: string;
   role: 'user' | 'assistant';
   content: string;
-  status: 'completed' | 'failed';
+  status: 'streaming' | 'completed' | 'failed';
   isRetrying?: boolean;
 };
 
@@ -47,7 +47,21 @@ export default function AcademicAdvisorHomeScreen({
   const hasConversation = chatMessages.length > 0;
   const [isLoadingConversation, setIsLoadingConversation] = useState(false);
   const handleQuickQuestionPress = (question: string) => { setMessage(question); };
+  const [isStreaming, setIsStreaming] = useState(false);
+  const streamingTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const streamingMessageIdRef = useRef<string | null>(null);
+  const fullStreamingContentRef = useRef('');
+
   useEffect(() => {
+  return () => {
+    if (streamingTimerRef.current) {
+      clearInterval(streamingTimerRef.current);
+      streamingTimerRef.current = null;
+    }
+  };
+}, []);
+
+useEffect(() => {
   const routeConversationId =
     route.params?.conversationId;
 
@@ -131,6 +145,87 @@ export default function AcademicAdvisorHomeScreen({
       conversationId: undefined,
     });
   };
+  const animateAssistantMessage = (
+    assistantMessageId: string,
+    fullContent: string,
+  ): Promise<void> => {
+    return new Promise(resolve => {
+      if (streamingTimerRef.current) {
+        clearInterval(streamingTimerRef.current);
+      }
+
+      streamingMessageIdRef.current =
+        assistantMessageId;
+
+      fullStreamingContentRef.current =
+        fullContent;
+
+      setIsStreaming(true);
+
+      setChatMessages(current => [
+        ...current,
+        {
+          id: assistantMessageId,
+          role: 'assistant',
+          content: '',
+          status: 'streaming',
+        },
+      ]);
+
+      let currentIndex = 0;
+
+      streamingTimerRef.current =
+        setInterval(() => {
+          currentIndex += 10;
+
+          const visibleContent =
+            fullContent.slice(0, currentIndex);
+
+          setChatMessages(current =>
+            current.map(item =>
+              item.id === assistantMessageId
+                ? {
+                    ...item,
+                    content: visibleContent,
+                  }
+                : item,
+            ),
+          );
+
+          listRef.current?.scrollToEnd({
+            animated: true,
+          });
+
+          if (currentIndex >= fullContent.length) {
+            if (streamingTimerRef.current) {
+              clearInterval(
+                streamingTimerRef.current,
+              );
+            }
+
+            streamingTimerRef.current = null;
+
+            setChatMessages(current =>
+              current.map(item =>
+                item.id === assistantMessageId
+                  ? {
+                      ...item,
+                      content: fullContent,
+                      status: 'completed',
+                    }
+                  : item,
+              ),
+            );
+
+            setIsStreaming(false);
+            streamingMessageIdRef.current = null;
+            fullStreamingContentRef.current = '';
+
+            resolve();
+          }
+        }, 5);
+    });
+  };
   const handleSubmitMessage = async () => {
     const trimmedMessage = message.trim();
 
@@ -177,19 +272,10 @@ export default function AcademicAdvisorHomeScreen({
 
       setCurrentConversationId(result.conversation.id);
 
-      const assistantMessage: ChatMessage = {
-        id:
-          result.assistantMessage.id ??
-          `assistant-${Date.now()}`,
-        role: 'assistant',
-        content: result.assistantMessage.content,
-        status: 'completed',
-      };
-
-      setChatMessages(previous => [
-        ...previous,
-        assistantMessage,
-      ]);
+      await animateAssistantMessage(
+        result.assistantMessage.id,
+        result.assistantMessage.content,
+      );
     } catch (error) {
         const apiError = error as ChatApiError;
 
@@ -342,6 +428,35 @@ export default function AcademicAdvisorHomeScreen({
     );
   };
 
+  const handleStopStreaming = () => {
+    if (streamingTimerRef.current) {
+      clearInterval(streamingTimerRef.current);
+      streamingTimerRef.current = null;
+    }
+
+    const messageId =
+      streamingMessageIdRef.current;
+
+    if (messageId) {
+      setChatMessages(current =>
+        current.map(item =>
+          item.id === messageId
+            ? {
+                ...item,
+                content:
+                  fullStreamingContentRef.current,
+                status: 'completed',
+              }
+            : item,
+        ),
+      );
+    }
+
+    setIsStreaming(false);
+    streamingMessageIdRef.current = null;
+    fullStreamingContentRef.current = '';
+  };
+
   return (
     <SafeAreaView edges={['bottom']} style={styles.safeArea}>
       <KeyboardAvoidingView
@@ -402,9 +517,12 @@ export default function AcademicAdvisorHomeScreen({
               listRef.current?.scrollToEnd({animated: false});
             }}
             ListFooterComponent={
-              isSending ? (
+              isSending && !isStreaming ? (
                 <View style={styles.typingArea}>
-                  <ActivityIndicator size="small" color={colors.accent} />
+                  <ActivityIndicator
+                    size="small"
+                    color={colors.accent}
+                  />
                   <Text style={styles.typingText}>
                     Academic advisor is thinking...
                   </Text>
@@ -426,6 +544,7 @@ export default function AcademicAdvisorHomeScreen({
               selectionColor={colors.accent}
               editable={
                 !isSending &&
+                !isStreaming &&
                 !isLoadingConversation
               }
               style={styles.input}
@@ -433,24 +552,38 @@ export default function AcademicAdvisorHomeScreen({
 
             <Pressable
               accessibilityRole="button"
-              accessibilityLabel="Send message"
-              disabled={
-                isSending ||
-                isLoadingConversation ||
-                !message.trim()
+              accessibilityLabel={
+                isStreaming
+                  ? 'Stop response animation'
+                  : 'Send message'
               }
-              hitSlop={spacing.xs}
-              onPress={handleSubmitMessage}
-              style={({pressed}) => [
-                styles.sendButton,
-                pressed && styles.pressed,
+              disabled={
+                !isStreaming &&
                 (
                   isSending ||
                   isLoadingConversation ||
                   !message.trim()
-                ) && styles.disabledButton,
+                )
+              }
+              onPress={
+                isStreaming
+                  ? handleStopStreaming
+                  : handleSubmitMessage
+              }
+              style={({pressed}) => [
+                styles.sendButton,
+                pressed && styles.pressed,
+                !isStreaming &&
+                  (
+                    isSending ||
+                    isLoadingConversation ||
+                    !message.trim()
+                  ) &&
+                  styles.disabledButton,
               ]}>
-              {isSending ? (
+              {isStreaming ? (
+                <View style={styles.stopIcon} />
+              ) : isSending ? (
                 <ActivityIndicator
                   size="small"
                   color={colors.primaryText}
@@ -681,5 +814,11 @@ const styles = StyleSheet.create({
     ...typography.small,
     color: colors.secondaryText,
     fontWeight: '700',
+  },
+  stopIcon: {
+    width: 13,
+    height: 13,
+    borderRadius: 2,
+    backgroundColor: colors.primaryText,
   },
 });
