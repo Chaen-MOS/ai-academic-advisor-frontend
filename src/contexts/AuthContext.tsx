@@ -223,6 +223,11 @@ export function AuthProvider({
             event,
           );
 
+          console.log(
+            'TEST ACCESS TOKEN:',
+            nextSession?.access_token,
+          );
+
           if (!isMounted) {
             return;
           }
