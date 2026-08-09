@@ -5,6 +5,7 @@ import React, {
   useMemo,
   useState,
 } from 'react';
+import {Linking} from 'react-native';
 import type {AuthResponse,Session, User} from '@supabase/supabase-js';
 import {supabase} from '../config/supabase';
 import {
@@ -18,8 +19,23 @@ type AuthContextValue = {
   session: Session | null;
   user: User | null;
   isLoading: boolean;
-  signIn: (email: string, password: string) => Promise<void>;
-  signUp: (email: string, password: string, metadata: SignUpMetadata) => Promise<AuthResponse['data']>;
+
+  isPasswordRecovery: boolean;
+  setIsPasswordRecovery: (
+    value: boolean,
+  ) => void;
+
+  signIn: (
+    email: string,
+    password: string,
+  ) => Promise<void>;
+
+  signUp: (
+    email: string,
+    password: string,
+    metadata: SignUpMetadata,
+  ) => Promise<AuthResponse['data']>;
+
   logout: () => Promise<void>;
 };
 
@@ -38,60 +54,196 @@ export function AuthProvider({
 }) {
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isPasswordRecovery, setIsPasswordRecovery] = useState(false);
 
   useEffect(() => {
-    let isMounted = true;
+  let isMounted = true;
 
-    async function restoreSession() {
-      try {
-        const currentSession = await getCurrentSession();
+  async function restoreSession() {
+    try {
+      const currentSession =
+        await getCurrentSession();
 
-        if (isMounted) {
-          setSession(currentSession);
-        }
-      } catch (error) {
-        console.error('Failed to restore session:', error);
-      } finally {
-        if (isMounted) {
-          setIsLoading(false);
-        }
+      if (isMounted) {
+        setSession(currentSession);
+      }
+    } catch (error) {
+      console.error(
+        'Failed to restore session:',
+        error,
+      );
+    } finally {
+      if (isMounted) {
+        setIsLoading(false);
       }
     }
+  }
 
-    restoreSession();
+  async function handleRecoveryUrl(
+    url: string | null,
+  ) {
+    if (!url) {
+      return;
+    }
 
-    const {
-      data: {subscription},
-    } = supabase.auth.onAuthStateChange((_event, nextSession) => {
-      setSession(nextSession);
+    console.log(
+      'Recovery deep link received:',
+      url.split('#')[0],
+    );
+
+    try {
+      const fragment =
+        url.split('#')[1];
+
+      if (!fragment) {
+        return;
+      }
+
+      const params =
+        new URLSearchParams(fragment);
+
+      const accessToken =
+        params.get('access_token');
+
+      const refreshToken =
+        params.get('refresh_token');
+
+      const type =
+        params.get('type');
+
+      if (
+        type !== 'recovery' ||
+        !accessToken ||
+        !refreshToken
+      ) {
+        return;
+      }
+
+      setIsPasswordRecovery(true);
       setIsLoading(false);
-    });
 
-    return () => {
-      isMounted = false;
-      subscription.unsubscribe();
-    };
-  }, []);
 
-  const value = useMemo<AuthContextValue>(
+      const {data, error} =
+        await supabase.auth.setSession({
+          access_token: accessToken,
+          refresh_token: refreshToken,
+        });
+
+      if (error) {
+        throw error;
+      }
+
+      if (!isMounted) {
+        return;
+      }
+
+      setSession(data.session);
+      setIsPasswordRecovery(true);
+      setIsLoading(false);
+
+      console.log(
+        'Password recovery session established.',
+      );
+    } catch (error) {
+      console.error(
+        'Failed to establish recovery session:',
+        error,
+      );
+    }
+  }
+
+  void restoreSession();
+
+  void Linking.getInitialURL().then(
+    url => handleRecoveryUrl(url),
+  );
+
+  const linkingSubscription =
+    Linking.addEventListener(
+      'url',
+      event => {
+        void handleRecoveryUrl(
+          event.url,
+        );
+      },
+    );
+
+  const {
+    data: {subscription},
+  } =
+    supabase.auth.onAuthStateChange(
+      (event, nextSession) => {
+        console.log(
+          'SUPABASE AUTH EVENT:',
+          event,
+        );
+
+        setSession(nextSession);
+        setIsLoading(false);
+
+        if (
+          event ===
+          'PASSWORD_RECOVERY'
+        ) {
+          setIsPasswordRecovery(true);
+        }
+
+        if (
+          event === 'SIGNED_OUT'
+        ) {
+          setIsPasswordRecovery(false);
+        }
+      },
+    );
+
+  return () => {
+    isMounted = false;
+    linkingSubscription.remove();
+    subscription.unsubscribe();
+  };
+}, []);
+
+  const value = useMemo(
     () => ({
       session,
       user: session?.user ?? null,
       isLoading,
 
-      async signIn(email, password) {
-        await signInWithEmail(email, password);
+      isPasswordRecovery,
+      setIsPasswordRecovery,
+
+      async signIn(
+        email: string,
+        password: string,
+      ) {
+        await signInWithEmail(
+          email,
+          password,
+        );
       },
 
-      async signUp(email, password, metadata) {
-        return signUpWithEmail(email, password, metadata);
+      async signUp(
+        email: string,
+        password: string,
+        metadata: SignUpMetadata,
+      ) {
+        return signUpWithEmail(
+          email,
+          password,
+          metadata,
+        );
       },
 
       async logout() {
+        setIsPasswordRecovery(false);
         await signOut();
       },
     }),
-    [session, isLoading],
+    [
+      session,
+      isLoading,
+      isPasswordRecovery,
+    ],
   );
 
   return (

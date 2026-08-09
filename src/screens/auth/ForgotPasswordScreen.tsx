@@ -1,7 +1,7 @@
 import React, {useState} from 'react';
 import {Alert, Pressable, StyleSheet, Text, View} from 'react-native';
 import type {NativeStackScreenProps} from '@react-navigation/native-stack';
-
+import {supabase} from '../../config/supabase';
 import {AuthHero} from '../../components/auth/AuthHero';
 import {AuthScreen} from '../../components/auth/AuthScreen';
 import {AuthTextField} from '../../components/auth/AuthTextField';
@@ -17,13 +17,56 @@ type ForgotPasswordScreenProps = NativeStackScreenProps<
 export default function ForgotPasswordScreen({
   navigation,
 }: ForgotPasswordScreenProps) {
-  const [email, setEmail] = useState('123@gmail.com');
+  const [email, setEmail] = useState('');
+  const [isSending, setIsSending] = useState(false);
+  
 
-  const handleRequestReset = () => {
-    Alert.alert(
-      'Password reset',
-      'Password reset requests will be connected to the backend later.',
-    );
+  const handleRequestReset = async () => {
+    const normalizedEmail = email.trim().toLowerCase();
+
+    if (!normalizedEmail) {
+      Alert.alert(
+        'Email required',
+        'Please enter your email address.',
+      );
+      return;
+    }
+
+    try {
+      setIsSending(true);
+
+      const {error} =
+        await supabase.auth.resetPasswordForEmail(
+          normalizedEmail,
+          {
+            redirectTo:
+              'aiacademicadvisor://reset-password',
+          },
+        );
+
+      if (error) {
+        throw error;
+      }
+
+      Alert.alert(
+        'Check your email',
+        'If an account exists for this email, a password reset link has been sent.',
+      );
+    } catch (error) {
+      console.error(
+        'Password reset failed:',
+        error,
+      );
+
+      Alert.alert(
+        'Unable to send reset link',
+        error instanceof Error
+          ? error.message
+          : 'Please try again.',
+      );
+    } finally {
+      setIsSending(false);
+    }
   };
 
   const handleBackToLogin = () => {

@@ -18,39 +18,62 @@ import SettingsScreen from '../screens/SettingsScreen';
 import type {RootStackParamList} from '../types/navigation';
 import {useAuth} from '../contexts/AuthContext';
 import {colors} from '../theme';
+import ResetPasswordScreen from '../screens/auth/ResetPasswordScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export function RootNavigator() {
-  const {session, isLoading} = useAuth();
+  const {
+    session,
+    isLoading,
+    isPasswordRecovery,
+  } = useAuth();
+
   if (isLoading) {
     return (
       <View style={styles.loadingScreen}>
-        <ActivityIndicator size="large" color={colors.accent} />
+        <ActivityIndicator
+          size="large"
+          color={colors.accent}
+        />
       </View>
     );
   }
+
   return (
     <Stack.Navigator screenOptions={{headerShown: false}}>
-      {session ? (
+      {isPasswordRecovery ? (
+        <Stack.Screen
+          name="ResetPassword"
+          component={ResetPasswordScreen}
+        />
+      ) : session ? (
         <>
-          <Stack.Screen name="Home" component={HomeScreen} />
+          <Stack.Screen
+            name="Home"
+            component={HomeScreen}
+          />
+
           <Stack.Screen
             name="ChatHistory"
             component={ChatHistoryScreen}
           />
+
           <Stack.Screen
             name="Settings"
             component={SettingsScreen}
           />
+
           <Stack.Screen
             name="Notifications"
             component={NotificationsScreen}
           />
+
           <Stack.Screen
             name="ContactAdvisor"
             component={ContactAdvisorScreen}
           />
+
           <Stack.Screen
             name="EditProfile"
             component={EditProfileScreen}
@@ -58,8 +81,16 @@ export function RootNavigator() {
         </>
       ) : (
         <>
-          <Stack.Screen name="Login" component={LoginScreen} />
-          <Stack.Screen name="SignUp" component={SignUpScreen} />
+          <Stack.Screen
+            name="Login"
+            component={LoginScreen}
+          />
+
+          <Stack.Screen
+            name="SignUp"
+            component={SignUpScreen}
+          />
+
           <Stack.Screen
             name="ForgotPassword"
             component={ForgotPasswordScreen}
