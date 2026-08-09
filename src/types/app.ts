@@ -1,4 +1,5 @@
 import type {LucideIcon} from 'lucide-react-native';
+import { RootStackParamList } from './navigation';
 
 export type NotificationCategory =
   | 'All'
@@ -32,7 +33,7 @@ export type SettingRowItem = {
   id: string;
   label: string;
   icon: LucideIcon;
-  target?: 'EditProfile' | 'Notifications';
+  target?: keyof RootStackParamList;
   type?: 'navigation' | 'switch';
 };
 

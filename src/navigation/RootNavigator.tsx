@@ -15,10 +15,13 @@ import EditProfileScreen from '../screens/EditProfileScreen';
 import HomeScreen from '../screens/HomeScreen';
 import NotificationsScreen from '../screens/NotificationsScreen';
 import SettingsScreen from '../screens/SettingsScreen';
+import LecturerPortalScreen from '../screens/LecturerPortalScreen';
+import AdminPortalScreen from '../screens/AdminPortalScreen';
 import type {RootStackParamList} from '../types/navigation';
 import {useAuth} from '../contexts/AuthContext';
 import {colors} from '../theme';
 import ResetPasswordScreen from '../screens/auth/ResetPasswordScreen';
+
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -27,9 +30,16 @@ export function RootNavigator() {
     session,
     isLoading,
     isPasswordRecovery,
+    role,
+    isRoleLoading,
   } = useAuth();
 
-  if (isLoading) {
+  if (
+    isLoading ||
+    (session &&
+      !isPasswordRecovery &&
+      isRoleLoading)
+  ) {
     return (
       <View style={styles.loadingScreen}>
         <ActivityIndicator
@@ -78,6 +88,20 @@ export function RootNavigator() {
             name="EditProfile"
             component={EditProfileScreen}
           />
+          
+          {role === 'LECTURER' && (
+            <Stack.Screen
+              name="LecturerPortal"
+              component={LecturerPortalScreen}
+            />
+          )}
+
+          {role === 'ADMIN' && (
+            <Stack.Screen
+              name="AdminPortal"
+              component={AdminPortalScreen}
+            />
+          )}
         </>
       ) : (
         <>

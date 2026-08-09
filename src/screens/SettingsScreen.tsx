@@ -12,7 +12,7 @@ import {
 import {useFocusEffect} from '@react-navigation/native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import type {NativeStackScreenProps} from '@react-navigation/native-stack';
-import {LogOut} from 'lucide-react-native';
+import {LogOut, GraduationCap, ShieldCheck} from 'lucide-react-native';
 import {useAuth} from '../contexts/AuthContext';
 import {ProfileHeader} from '../components/profile/ProfileHeader';
 import {SettingSection} from '../components/settings/SettingSection';
@@ -36,7 +36,7 @@ type HeaderProfile = {
 export default function SettingsScreen({
   navigation,
 }: SettingsScreenProps) {
-  const {logout, user} = useAuth();
+  const {logout, user, role} = useAuth();
   const [chatMemoryEnabled, setChatMemoryEnabled] = useState(true);
   const [profile, setProfile] = useState<HeaderProfile>({
     name:
@@ -158,6 +158,42 @@ export default function SettingsScreen({
     }
   };
 
+  const visibleSettingsSections = [
+  ...settingsSections,
+
+  ...(role === 'LECTURER'
+    ? [
+        {
+          title: 'LECTURER',
+          rows: [
+            {
+              id: 'lecturer-portal',
+              label: 'Lecturer Portal',
+              icon: GraduationCap,
+              target: 'LecturerPortal' as const,
+            },
+          ],
+        },
+      ]
+    : []),
+
+  ...(role === 'ADMIN'
+    ? [
+        {
+          title: 'ADMIN',
+          rows: [
+            {
+              id: 'admin-portal',
+              label: 'Admin Portal',
+              icon: ShieldCheck,
+              target: 'AdminPortal' as const,
+            },
+          ],
+        },
+      ]
+    : []),
+];
+
   return (
     <SafeAreaView edges={['bottom']} style={styles.screen}>
       {isLoadingProfile ? (
@@ -181,7 +217,7 @@ export default function SettingsScreen({
       <ScrollView
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}>
-        {settingsSections.map(section => (
+        {visibleSettingsSections.map(section => (
           <SettingSection
             key={section.title}
             title={section.title}

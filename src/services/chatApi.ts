@@ -49,6 +49,11 @@ async function getAccessToken(): Promise<string> {
     error,
   } = await supabase.auth.getSession();
 
+  console.log(
+    'TEST ACCESS TOKEN:',
+    session?.access_token,
+  );
+
   if (error) {
     throw new Error(error.message);
   }

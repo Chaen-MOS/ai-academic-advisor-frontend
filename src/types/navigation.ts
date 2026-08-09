@@ -19,4 +19,6 @@ export type RootStackParamList = {
   Notifications: undefined;
   ContactAdvisor: undefined;
   EditProfile: undefined;
+  LecturerPortal: undefined;
+  AdminPortal: undefined;
 };
