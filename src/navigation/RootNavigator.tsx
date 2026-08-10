@@ -21,6 +21,7 @@ import type {RootStackParamList} from '../types/navigation';
 import {useAuth} from '../contexts/AuthContext';
 import {colors} from '../theme';
 import ResetPasswordScreen from '../screens/auth/ResetPasswordScreen';
+import MyTimetableScreen from '../screens/MyTimetableScreen';
 
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -88,6 +89,11 @@ export function RootNavigator() {
             name="EditProfile"
             component={EditProfileScreen}
           />
+
+          <Stack.Screen
+            name="MyTimetable"
+            component={MyTimetableScreen}
+          />
           
           {role === 'LECTURER' && (
             <Stack.Screen
@@ -101,6 +107,7 @@ export function RootNavigator() {
               name="AdminPortal"
               component={AdminPortalScreen}
             />
+            
           )}
         </>
       ) : (

@@ -513,11 +513,6 @@ export default function AdminPortalScreen({
             <Text style={styles.title}>
               Knowledge Base Management
             </Text>
-
-            <Text style={styles.subtitle}>
-              Manage academic resources used by
-              the AI advisor
-            </Text>
           </View>
 
             <KnowledgeUploadCard
@@ -646,10 +641,4 @@ const styles = StyleSheet.create({
     lineHeight: 26,
   },
 
-  subtitle: {
-    ...typography.body,
-    color: colors.secondaryText,
-    fontSize: 14,
-    lineHeight: 21,
-  },
 });

@@ -8,6 +8,7 @@ import type {
 import {
   Bell,
   Brain,
+  CalendarDays,
   CircleHelp,
   FileText,
   KeyRound,
@@ -86,6 +87,7 @@ export const settingsSections: {
     rows: [
       {id: 'profile', label: 'Profile', icon: UserRound, target: 'EditProfile'},
       {id: 'password', label: 'Change Password', icon: KeyRound},
+      {id: 'timetable', label: 'My Timetable', icon: CalendarDays, target: 'MyTimetable'},
     ],
   },
   {

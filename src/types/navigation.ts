@@ -21,4 +21,5 @@ export type RootStackParamList = {
   EditProfile: undefined;
   LecturerPortal: undefined;
   AdminPortal: undefined;
+  MyTimetable: undefined;
 };
