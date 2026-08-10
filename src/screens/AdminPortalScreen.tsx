@@ -25,6 +25,7 @@ import {
   setKnowledgeDocumentEnabled,
   uploadKnowledgePdf,
   deleteKnowledgeDocument,
+  updateKnowledgeDocumentAccess,
   type KnowledgeDocument,
   type KnowledgeAccessRole,
 } from '../services/knowledgeApi';
@@ -40,6 +41,9 @@ import {
   pick,
   types,
 } from '@react-native-documents/picker';
+import {
+  EditKnowledgeAccessModal,
+} from '../components/admin/EditKnowledgeAccessModal';
 
 type AdminPortalScreenProps = NativeStackScreenProps<
   RootStackParamList,
@@ -84,6 +88,21 @@ export default function AdminPortalScreen({
   const [
     isUploading,
     setIsUploading,
+  ] = useState(false);
+
+  const [
+    selectedAccessDocument,
+    setSelectedAccessDocument,
+  ] = useState<KnowledgeDocument | null>(null);
+
+  const [
+    isAccessModalVisible,
+    setIsAccessModalVisible,
+  ] = useState(false);
+
+  const [
+    isSavingAccess,
+    setIsSavingAccess,
   ] = useState(false);
 
   useFocusEffect(
@@ -297,27 +316,105 @@ export default function AdminPortalScreen({
 
   const handleOpenDocumentMenu = (
     document: KnowledgeDocument,
-    ) => {
+  ) => {
     const displayName =
-        document.title ||
-        document.file_name;
+      document.title ||
+      document.file_name;
 
     Alert.alert(
-        displayName,
-        'Choose an action for this document.',
-        [
+      displayName,
+      'Choose an action for this document.',
+      [
         {
-            text: 'Cancel',
-            style: 'cancel',
+          text: 'Edit Access',
+          onPress: () => {
+            setSelectedAccessDocument(
+              document,
+            );
+
+            setIsAccessModalVisible(
+              true,
+            );
+          },
         },
+
         {
-            text: 'Delete',
-            style: 'destructive',
-            onPress: () =>
-            confirmDeleteDocument(document),
+          text: 'Delete',
+          style: 'destructive',
+          onPress: () =>
+            confirmDeleteDocument(
+              document,
+            ),
         },
-        ],
+
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+      ],
     );
+  };
+
+  const handleSaveDocumentAccess = async (
+    accessibleRoles: KnowledgeAccessRole[],
+  ) => {
+    if (!selectedAccessDocument) {
+      return;
+    }
+
+    try {
+      setIsSavingAccess(true);
+
+      const updatedDocument =
+        await updateKnowledgeDocumentAccess(
+          selectedAccessDocument.id,
+          accessibleRoles,
+        );
+
+      setDocuments(current =>
+        current.map(document =>
+          document.id ===
+          updatedDocument.id
+            ? updatedDocument
+            : document,
+        ),
+      );
+
+      setSelectedAccessDocument(
+        updatedDocument,
+      );
+
+      setIsAccessModalVisible(
+        false,
+      );
+
+      setSelectedAccessDocument(
+        null,
+      );
+    } catch (error) {
+      console.error(
+        'Failed to update document access:',
+        error,
+      );
+
+      Alert.alert(
+        'Update Failed',
+        error instanceof Error
+          ? error.message
+          : 'Unable to update document access.',
+      );
+    } finally {
+      setIsSavingAccess(false);
+    }
+  };
+
+  const handleCloseAccessModal = () => {
+    if (isSavingAccess) {
+      return;
+    }
+
+    setIsAccessModalVisible(false);
+    setSelectedAccessDocument(null);
   };
 
   const confirmDeleteDocument = (
@@ -475,6 +572,17 @@ export default function AdminPortalScreen({
             />
         </View>
       </ScrollView>
+      <EditKnowledgeAccessModal
+        visible={isAccessModalVisible}
+        document={selectedAccessDocument}
+        isSaving={isSavingAccess}
+        onClose={
+          handleCloseAccessModal
+        }
+        onSave={
+          handleSaveDocumentAccess
+        }
+      />
     </SafeAreaView>
   );
 }

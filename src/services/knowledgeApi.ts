@@ -268,3 +268,48 @@ export async function deleteKnowledgeDocument(
     );
   }
 }
+
+export async function updateKnowledgeDocumentAccess(
+  documentId: string,
+  accessibleRoles: KnowledgeAccessRole[],
+): Promise<KnowledgeDocument> {
+  const token = await getAccessToken();
+
+  const response = await fetch(
+    `${API_BASE_URL}/api/knowledge/${documentId}/access`,
+    {
+      method: 'PATCH',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        accessibleRoles,
+      }),
+    },
+  );
+
+  const rawBody = await response.text();
+
+  let data: {
+    document?: KnowledgeDocument;
+    error?: string;
+  };
+
+  try {
+    data = JSON.parse(rawBody);
+  } catch {
+    throw new Error(
+      `Invalid server response: ${rawBody.slice(0, 200)}`,
+    );
+  }
+
+  if (!response.ok || !data.document) {
+    throw new Error(
+      data.error ??
+        'Failed to update document access.',
+    );
+  }
+
+  return data.document;
+}
