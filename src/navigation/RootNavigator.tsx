@@ -4,8 +4,8 @@ import {
   StyleSheet,
   View,
 } from 'react-native';
+import MySupportRequestsScreen from '../screens/MySupportRequestsScreen';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
-
 import ForgotPasswordScreen from '../screens/auth/ForgotPasswordScreen';
 import LoginScreen from '../screens/auth/LoginScreen';
 import SignUpScreen from '../screens/auth/SignUpScreen';
@@ -23,7 +23,7 @@ import {colors} from '../theme';
 import ResetPasswordScreen from '../screens/auth/ResetPasswordScreen';
 import MyTimetableScreen from '../screens/MyTimetableScreen';
 import MyEventsScreen from '../screens/MyEventsScreen';
-
+import HelpCentreScreen from '../screens/HelpCentreScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -100,7 +100,17 @@ export function RootNavigator() {
             name="MyEvents"
             component={MyEventsScreen}
           />
-                    
+
+          <Stack.Screen
+            name="HelpCentre"
+            component={HelpCentreScreen}
+          />
+
+          <Stack.Screen
+            name="MySupportRequests"
+            component={MySupportRequestsScreen}
+          />
+                              
           {role === 'LECTURER' && (
             <Stack.Screen
               name="LecturerPortal"

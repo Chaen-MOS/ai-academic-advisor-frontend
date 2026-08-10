@@ -23,4 +23,6 @@ export type RootStackParamList = {
   AdminPortal: undefined;
   MyTimetable: undefined;
   MyEvents: undefined;
+  HelpCentre: undefined;
+  MySupportRequests: undefined;
 };

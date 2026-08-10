@@ -76,7 +76,7 @@ export const settingsSections: {
     title: 'SUPPORT',
     rows: [
       {id: 'terms', label: 'Terms & Conditions', icon: FileText},
-      {id: 'help', label: 'Help Center', icon: CircleHelp},
+      {id: 'help', label: 'Help Center', icon: CircleHelp, target: 'HelpCentre',},
     ],
   },
 ];

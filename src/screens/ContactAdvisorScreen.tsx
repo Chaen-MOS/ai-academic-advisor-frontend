@@ -1,227 +1,678 @@
-import React, {useState} from 'react';
-import {Pressable, StyleSheet, Text, View} from 'react-native';
-import {SafeAreaView} from 'react-native-safe-area-context';
-import type {NativeStackScreenProps} from '@react-navigation/native-stack';
+import React, {
+  useRef,
+  useState,
+} from 'react';
 
-import {ScreenHeader} from '../components/common/ScreenHeader';
-import {PrimaryButton} from '../components/common/PrimaryButton';
-import {colors, radius, spacing, typography} from '../theme';
-import type {RootStackParamList} from '../types/navigation';
+import {
+  Alert,
+  Animated,
+  Easing,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
 
-type ContactAdvisorScreenProps = NativeStackScreenProps<
+import {
+  CheckCircle2,
+  Mail,
+} from 'lucide-react-native';
+
+import {
+  SafeAreaView,
+} from 'react-native-safe-area-context';
+
+import type {
+  NativeStackScreenProps,
+} from '@react-navigation/native-stack';
+
+import {
+  ScreenHeader,
+} from '../components/common/ScreenHeader';
+
+import {
+  PrimaryButton,
+} from '../components/common/PrimaryButton';
+
+import {
+  createSupportTicket,
+} from '../services/supportApi';
+
+import {
+  colors,
+  radius,
+  spacing,
+  typography,
+} from '../theme';
+
+import type {
   RootStackParamList,
-  'ContactAdvisor'
->;
+} from '../types/navigation';
 
-type AdvisorOption = 'lecturer' | 'academicAdvisor';
+type ContactAdvisorScreenProps =
+  NativeStackScreenProps<
+    RootStackParamList,
+    'ContactAdvisor'
+  >;
 
 export default function ContactAdvisorScreen({
   navigation,
 }: ContactAdvisorScreenProps) {
-  const [selectedAdvisor, setSelectedAdvisor] =
-    useState<AdvisorOption>('academicAdvisor');
+  const [
+    subject,
+    setSubject,
+  ] = useState('');
 
-  const handleContactNow = () => {
-    navigation.navigate('ChatHistory');
-  };
+  const [
+    message,
+    setMessage,
+  ] = useState('');
+
+  const [
+    isSubmitting,
+    setIsSubmitting,
+  ] = useState(false);
+
+  const [
+    isSubmitted,
+    setIsSubmitted,
+  ] = useState(false);
+
+  const envelopeTranslateX =
+    useRef(
+      new Animated.Value(0),
+    ).current;
+
+  const envelopeTranslateY =
+    useRef(
+      new Animated.Value(0),
+    ).current;
+
+  const envelopeScale =
+    useRef(
+      new Animated.Value(1),
+    ).current;
+
+  const envelopeOpacity =
+    useRef(
+      new Animated.Value(1),
+    ).current;
+
+  const successOpacity =
+    useRef(
+      new Animated.Value(0),
+    ).current;
+
+  const canSubmit =
+    subject.trim().length > 0 &&
+    message.trim().length > 0 &&
+    !isSubmitting;
+
+  const animateSubmission =
+    () => {
+      Animated.parallel([
+        Animated.timing(
+          envelopeTranslateX,
+          {
+            toValue: 85,
+            duration: 650,
+            easing:
+              Easing.in(
+                Easing.cubic,
+              ),
+            useNativeDriver: true,
+          },
+        ),
+
+        Animated.timing(
+          envelopeTranslateY,
+          {
+            toValue: -140,
+            duration: 650,
+            easing:
+              Easing.in(
+                Easing.cubic,
+              ),
+            useNativeDriver: true,
+          },
+        ),
+
+        Animated.timing(
+          envelopeScale,
+          {
+            toValue: 0.55,
+            duration: 650,
+            useNativeDriver: true,
+          },
+        ),
+
+        Animated.timing(
+          envelopeOpacity,
+          {
+            toValue: 0,
+            duration: 600,
+            useNativeDriver: true,
+          },
+        ),
+      ]).start(() => {
+        setIsSubmitted(true);
+
+        Animated.timing(
+          successOpacity,
+          {
+            toValue: 1,
+            duration: 300,
+            useNativeDriver: true,
+          },
+        ).start();
+      });
+    };
+
+  const handleSubmit =
+    async () => {
+      if (!canSubmit) {
+        return;
+      }
+
+      try {
+        setIsSubmitting(true);
+
+        await createSupportTicket({
+          subject:
+            subject.trim(),
+
+          message:
+            message.trim(),
+        });
+
+        animateSubmission();
+      } catch (error) {
+        console.error(
+          'Support ticket submission failed:',
+          error,
+        );
+
+        Alert.alert(
+          'Submission Failed',
+          error instanceof Error
+            ? error.message
+            : 'Unable to submit your question.',
+        );
+      } finally {
+        setIsSubmitting(false);
+      }
+    };
+
+  if (isSubmitted) {
+    return (
+      <SafeAreaView
+        edges={['bottom']}
+        style={styles.screen}>
+        <ScreenHeader
+          title="Contact Advisor"
+          onBackPress={() =>
+            navigation.goBack()
+          }
+        />
+
+        <Animated.View
+          style={[
+            styles.successContainer,
+            {
+              opacity:
+                successOpacity,
+            },
+          ]}>
+          <View
+            style={
+              styles.successIcon
+            }>
+            <CheckCircle2
+              size={42}
+              strokeWidth={1.8}
+              color={
+                colors.accent
+              }
+            />
+          </View>
+
+          <Text
+            style={
+              styles.successTitle
+            }>
+            Your question has been
+            submitted.
+          </Text>
+
+          <Text
+            style={
+              styles.successDescription
+            }>
+            Please wait for a reply
+            from a lecturer or academic
+            advisor. You can check the
+            status of your request at
+            any time.
+          </Text>
+
+          <View
+            style={
+              styles.successActions
+            }>
+            <PrimaryButton
+              label="View My Requests"
+              accessibilityLabel="View my support requests"
+              onPress={() =>
+                navigation.navigate(
+                  'MySupportRequests',
+                )
+              }
+              variant="accent"
+            />
+
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Back to chat"
+              onPress={() =>
+                navigation.navigate(
+                  'Home',
+                )
+              }
+              style={
+                styles.secondaryButton
+              }>
+              <Text
+                style={
+                  styles.secondaryButtonText
+                }>
+                Back to Chat
+              </Text>
+            </Pressable>
+          </View>
+        </Animated.View>
+      </SafeAreaView>
+    );
+  }
 
   return (
-    <SafeAreaView edges={['bottom']} style={styles.screen}>
-      <ScreenHeader title="Contact Advisor" onBackPress={navigation.goBack} />
+    <SafeAreaView
+      edges={['bottom']}
+      style={styles.screen}>
+      <ScreenHeader
+        title="Contact Advisor"
+        onBackPress={() =>
+          navigation.goBack()
+        }
+      />
 
-      <View style={styles.content}>
-        <View style={styles.illustration}>
-          <View style={styles.illustrationCircle}>
-            <Text style={styles.illustrationText}>advisor</Text>
-          </View>
-          <View style={styles.illustrationLine} />
-        </View>
+      <ScrollView
+        contentContainerStyle={
+          styles.content
+        }
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={
+          false
+        }>
+        <View
+          style={
+            styles.intro
+          }>
+          <Animated.View
+            style={[
+              styles.envelopeCircle,
+              {
+                opacity:
+                  envelopeOpacity,
 
-        <View style={styles.copyArea}>
-          <Text style={styles.title}>Need more help?</Text>
-          <Text style={styles.description}>
-            Share this chat context with a lecturer or academic advisor for
-            human guidance.
+                transform: [
+                  {
+                    translateX:
+                      envelopeTranslateX,
+                  },
+                  {
+                    translateY:
+                      envelopeTranslateY,
+                  },
+                  {
+                    scale:
+                      envelopeScale,
+                  },
+                ],
+              },
+            ]}>
+            <Mail
+              size={34}
+              strokeWidth={1.8}
+              color={
+                colors.accent
+              }
+            />
+          </Animated.View>
+
+          <Text
+            style={
+              styles.title
+            }>
+            Leave your question
+          </Text>
+
+          <Text
+            style={
+              styles.description
+            }>
+            Tell us what you need help
+            with. A lecturer or academic
+            advisor will review your
+            request and reply when
+            available.
           </Text>
         </View>
 
-        <View style={styles.options}>
-          <AdvisorChoice
-            label="Lecturer"
-            description="Best for course-specific feedback and assessment questions."
-            selected={selectedAdvisor === 'lecturer'}
-            onPress={() => setSelectedAdvisor('lecturer')}
+        <View
+          style={
+            styles.form
+          }>
+          <Text
+            style={
+              styles.label
+            }>
+            Subject
+          </Text>
+
+          <TextInput
+            editable={
+              !isSubmitting
+            }
+            value={subject}
+            onChangeText={
+              setSubject
+            }
+            placeholder="e.g. Course overload request"
+            placeholderTextColor={
+              colors.secondaryText
+            }
+            style={
+              styles.subjectInput
+            }
           />
-          <AdvisorChoice
-            label="Academic Advisor"
-            description="Best for degree planning, academic standing, and next steps."
-            selected={selectedAdvisor === 'academicAdvisor'}
-            onPress={() => setSelectedAdvisor('academicAdvisor')}
+
+          <Text
+            style={[
+              styles.label,
+              styles.questionLabel,
+            ]}>
+            Your Question
+          </Text>
+
+          <TextInput
+            editable={
+              !isSubmitting
+            }
+            multiline
+            value={message}
+            onChangeText={
+              setMessage
+            }
+            placeholder="Describe your question or concern..."
+            placeholderTextColor={
+              colors.secondaryText
+            }
+            style={
+              styles.messageInput
+            }
+            textAlignVertical="top"
           />
         </View>
 
-        <Text style={styles.privacyNote}>
-          Your selected advisor will receive the recent chat summary and profile
-          details needed to respond.
-        </Text>
+        <View
+          style={
+            styles.infoCard
+          }>
+          <Text
+            style={
+              styles.infoText
+            }>
+            Your request will be sent
+            securely to the support
+            team. You can track replies
+            in My Support Requests.
+          </Text>
+        </View>
 
-        <View style={styles.actions}>
+        <View
+          style={
+            styles.actions
+          }>
           <PrimaryButton
-            label="Contact Now"
-            accessibilityLabel="Contact selected advisor"
-            onPress={handleContactNow}
+            label={
+              isSubmitting
+                ? 'Submitting...'
+                : 'Submit Question'
+            }
+            accessibilityLabel="Submit question"
+            onPress={
+              handleSubmit
+            }
             variant="accent"
+            disabled={
+              !canSubmit
+            }
           />
+
           <Pressable
             accessibilityRole="button"
             accessibilityLabel="Back to chat"
-            onPress={() => navigation.navigate('Home')}
-            style={styles.backButton}>
-            <Text style={styles.backText}>Back to Chat</Text>
+            disabled={
+              isSubmitting
+            }
+            onPress={() =>
+              navigation.navigate(
+                'Home',
+              )
+            }
+            style={
+              styles.secondaryButton
+            }>
+            <Text
+              style={
+                styles.secondaryButtonText
+              }>
+              Back to Chat
+            </Text>
           </Pressable>
         </View>
-      </View>
+      </ScrollView>
     </SafeAreaView>
   );
 }
 
-type AdvisorChoiceProps = {
-  label: string;
-  description: string;
-  selected: boolean;
-  onPress: () => void;
-};
+const styles =
+  StyleSheet.create({
+    screen: {
+      flex: 1,
+      backgroundColor:
+        colors.background,
+    },
 
-function AdvisorChoice({
-  label,
-  description,
-  selected,
-  onPress,
-}: AdvisorChoiceProps) {
-  return (
-    <Pressable
-      accessibilityRole="radio"
-      accessibilityLabel={label}
-      accessibilityState={{checked: selected}}
-      onPress={onPress}
-      style={[styles.optionCard, selected && styles.optionCardSelected]}>
-      <View style={[styles.radio, selected && styles.radioSelected]} />
-      <View style={styles.optionTextArea}>
-        <Text style={styles.optionTitle}>{label}</Text>
-        <Text style={styles.optionDescription}>{description}</Text>
-      </View>
-    </Pressable>
-  );
-}
+    content: {
+      flexGrow: 1,
+      padding: spacing.lg,
+      paddingBottom: 40,
+    },
 
-const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
-  content: {
-    flex: 1,
-    padding: spacing.lg,
-  },
-  illustration: {
-    height: 150,
-    borderRadius: radius.xl,
-    backgroundColor: colors.cardBackground,
-    borderWidth: 1,
-    borderColor: colors.divider,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  illustrationCircle: {
-    width: 76,
-    height: 76,
-    borderRadius: 38,
-    backgroundColor: colors.softCyan,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  illustrationText: {
-    ...typography.small,
-    color: colors.accent,
-    fontWeight: '700',
-  },
-  illustrationLine: {
-    width: 130,
-    height: 2,
-    marginTop: spacing.md,
-    backgroundColor: colors.divider,
-  },
-  copyArea: {
-    marginTop: spacing.lg,
-  },
-  title: {
-    ...typography.authHeading,
-    color: colors.primaryText,
-  },
-  description: {
-    ...typography.body,
-    marginTop: spacing.xs,
-    color: colors.secondaryText,
-  },
-  options: {
-    gap: spacing.md,
-    marginTop: spacing.lg,
-  },
-  optionCard: {
-    borderRadius: radius.lg,
-    borderWidth: 1,
-    borderColor: colors.divider,
-    backgroundColor: colors.cardBackground,
-    padding: spacing.md,
-    flexDirection: 'row',
-    gap: spacing.sm,
-  },
-  optionCardSelected: {
-    borderColor: colors.accent,
-    backgroundColor: colors.softCyan,
-  },
-  radio: {
-    width: 14,
-    height: 14,
-    borderRadius: 7,
-    borderWidth: 1,
-    borderColor: colors.secondaryText,
-    marginTop: 3,
-  },
-  radioSelected: {
-    borderColor: colors.accent,
-    backgroundColor: colors.accent,
-  },
-  optionTextArea: {
-    flex: 1,
-  },
-  optionTitle: {
-    ...typography.body,
-    color: colors.primaryText,
-    fontWeight: '700',
-  },
-  optionDescription: {
-    ...typography.small,
-    marginTop: spacing.xxs,
-    color: colors.secondaryText,
-  },
-  privacyNote: {
-    ...typography.small,
-    marginTop: spacing.lg,
-    color: colors.secondaryText,
-  },
-  actions: {
-    marginTop: 'auto',
-    gap: spacing.md,
-  },
-  backButton: {
-    minHeight: 44,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  backText: {
-    ...typography.body,
-    color: colors.accent,
-    fontWeight: '700',
-  },
-});
+    intro: {
+      alignItems: 'center',
+      paddingTop:
+        spacing.lg,
+    },
+
+    envelopeCircle: {
+      width: 82,
+      height: 82,
+      borderRadius: 41,
+      alignItems: 'center',
+      justifyContent:
+        'center',
+      backgroundColor:
+        colors.softCyan,
+      marginBottom:
+        spacing.lg,
+    },
+
+    title: {
+      ...typography.authHeading,
+      color:
+        colors.primaryText,
+      textAlign: 'center',
+    },
+
+    description: {
+      ...typography.body,
+      color:
+        colors.secondaryText,
+      textAlign: 'center',
+      marginTop:
+        spacing.xs,
+      maxWidth: 320,
+    },
+
+    form: {
+      marginTop:
+        spacing.xl,
+    },
+
+    label: {
+      ...typography.small,
+      color:
+        colors.primaryText,
+      fontWeight: '700',
+      marginBottom:
+        spacing.xs,
+    },
+
+    questionLabel: {
+      marginTop:
+        spacing.lg,
+    },
+
+    subjectInput: {
+      minHeight: 46,
+      borderWidth: 1,
+      borderColor:
+        colors.divider,
+      borderRadius:
+        radius.md,
+      backgroundColor:
+        colors.cardBackground,
+      paddingHorizontal:
+        spacing.md,
+      color:
+        colors.primaryText,
+      fontSize: 13,
+    },
+
+    messageInput: {
+      minHeight: 180,
+      borderWidth: 1,
+      borderColor:
+        colors.divider,
+      borderRadius:
+        radius.md,
+      backgroundColor:
+        colors.cardBackground,
+      padding:
+        spacing.md,
+      color:
+        colors.primaryText,
+      fontSize: 13,
+      lineHeight: 20,
+    },
+
+    infoCard: {
+      marginTop:
+        spacing.lg,
+      padding:
+        spacing.md,
+      borderRadius:
+        radius.md,
+      backgroundColor:
+        colors.softCyan,
+    },
+
+    infoText: {
+      ...typography.small,
+      color:
+        colors.secondaryText,
+      lineHeight: 17,
+    },
+
+    actions: {
+      marginTop: 'auto',
+      paddingTop:
+        spacing.xl,
+      gap: spacing.md,
+    },
+
+    secondaryButton: {
+      minHeight: 44,
+      alignItems: 'center',
+      justifyContent:
+        'center',
+    },
+
+    secondaryButtonText: {
+      ...typography.body,
+      color:
+        colors.accent,
+      fontWeight: '700',
+    },
+
+    successContainer: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent:
+        'center',
+      padding: spacing.xl,
+    },
+
+    successIcon: {
+      width: 88,
+      height: 88,
+      borderRadius: 44,
+      alignItems: 'center',
+      justifyContent:
+        'center',
+      backgroundColor:
+        colors.softCyan,
+      marginBottom:
+        spacing.lg,
+    },
+
+    successTitle: {
+      ...typography.authHeading,
+      color:
+        colors.primaryText,
+      textAlign: 'center',
+      maxWidth: 300,
+    },
+
+    successDescription: {
+      ...typography.body,
+      color:
+        colors.secondaryText,
+      textAlign: 'center',
+      lineHeight: 21,
+      marginTop:
+        spacing.sm,
+      maxWidth: 320,
+    },
+
+    successActions: {
+      width: '100%',
+      marginTop:
+        spacing.xl,
+      gap: spacing.md,
+    },
+  });
