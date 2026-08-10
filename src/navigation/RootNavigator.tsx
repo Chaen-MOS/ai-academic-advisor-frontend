@@ -22,6 +22,7 @@ import {useAuth} from '../contexts/AuthContext';
 import {colors} from '../theme';
 import ResetPasswordScreen from '../screens/auth/ResetPasswordScreen';
 import MyTimetableScreen from '../screens/MyTimetableScreen';
+import MyEventsScreen from '../screens/MyEventsScreen';
 
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -94,7 +95,12 @@ export function RootNavigator() {
             name="MyTimetable"
             component={MyTimetableScreen}
           />
-          
+
+          <Stack.Screen
+            name="MyEvents"
+            component={MyEventsScreen}
+          />
+                    
           {role === 'LECTURER' && (
             <Stack.Screen
               name="LecturerPortal"

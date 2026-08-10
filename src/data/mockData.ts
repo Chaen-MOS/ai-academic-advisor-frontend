@@ -12,6 +12,7 @@ import {
   CircleHelp,
   FileText,
   KeyRound,
+  ScrollText,
   UserRound,
   type LucideIcon,
 } from 'lucide-react-native';
@@ -35,48 +36,11 @@ export const profileData: ProfileData = {
   avatar_url: null,
 };
 
-export const notificationCategories: NotificationCategory[] = [
+export const notificationCategories = [
   'All',
-  'Courses',
-  'Exams',
-  'Deadlines',
-  'Alerts',
-];
-
-export const notifications: NotificationRecord[] = [
-  {
-    id: 'course-registration',
-    title: 'Course registration opens',
-    description: 'Semester 2 course planning is available from 9:00 AM.',
-    dateLabel: 'Today',
-    timeLabel: '8:30 AM',
-    category: 'Courses',
-  },
-  {
-    id: 'midterm-schedule',
-    title: 'Midterm schedule published',
-    description: 'Check your exam timetable and room assignment.',
-    dateLabel: 'Today',
-    timeLabel: '11:45 AM',
-    category: 'Exams',
-  },
-  {
-    id: 'advisor-note',
-    title: 'Advisor follow-up recommended',
-    description: 'A lecturer can help review your module overload request.',
-    dateLabel: 'Yesterday',
-    timeLabel: '4:10 PM',
-    category: 'Alerts',
-  },
-  {
-    id: 'scholarship-deadline',
-    title: 'Scholarship form deadline',
-    description: 'Submit supporting documents by Friday evening.',
-    dateLabel: 'This Week',
-    timeLabel: 'Fri, 5:00 PM',
-    category: 'Deadlines',
-  },
-];
+  'Classes',
+  'Events',
+] as const;
 
 export const settingsSections: {
   title: string;
@@ -88,6 +52,7 @@ export const settingsSections: {
       {id: 'profile', label: 'Profile', icon: UserRound, target: 'EditProfile'},
       {id: 'password', label: 'Change Password', icon: KeyRound},
       {id: 'timetable', label: 'My Timetable', icon: CalendarDays, target: 'MyTimetable'},
+      {id: 'event', label: 'My Event', icon: ScrollText, target: 'MyEvents'},
     ],
   },
   {

@@ -3,10 +3,8 @@ import { RootStackParamList } from './navigation';
 
 export type NotificationCategory =
   | 'All'
-  | 'Courses'
-  | 'Exams'
-  | 'Deadlines'
-  | 'Alerts';
+  | 'Classes'
+  | 'Events';
 
 export type NotificationRecord = {
   id: string;

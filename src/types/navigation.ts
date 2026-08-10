@@ -22,4 +22,5 @@ export type RootStackParamList = {
   LecturerPortal: undefined;
   AdminPortal: undefined;
   MyTimetable: undefined;
+  MyEvents: undefined;
 };
