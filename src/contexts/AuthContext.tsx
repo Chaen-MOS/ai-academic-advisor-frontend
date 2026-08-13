@@ -26,6 +26,10 @@ import {
   type UserRole,
 } from '../services/auth/roleService';
 
+import {
+  syncAcademicReminders,
+} from '../services/academicReminderService';
+
 type SignUpMetadata = {
   username: string;
   mobileNumber: string;
@@ -324,6 +328,45 @@ export function AuthProvider({
     };
   }, [
     session,
+    isPasswordRecovery,
+  ]);
+
+  useEffect(() => {
+    if (
+      !session ||
+      isPasswordRecovery
+    ) {
+      return;
+    }
+
+    let isMounted = true;
+
+    async function syncReminders() {
+      try {
+        await syncAcademicReminders();
+
+        if (!isMounted) {
+          return;
+        }
+
+        console.log(
+          'Academic reminders synchronized.',
+        );
+      } catch (error) {
+        console.error(
+          'Failed to synchronize academic reminders:',
+          error,
+        );
+      }
+    }
+
+    void syncReminders();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [
+    session?.user.id,
     isPasswordRecovery,
   ]);
 

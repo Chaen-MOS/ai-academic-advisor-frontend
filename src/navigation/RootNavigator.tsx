@@ -24,6 +24,8 @@ import ResetPasswordScreen from '../screens/auth/ResetPasswordScreen';
 import MyTimetableScreen from '../screens/MyTimetableScreen';
 import MyEventsScreen from '../screens/MyEventsScreen';
 import HelpCentreScreen from '../screens/HelpCentreScreen';
+import SupportRequestsScreen from '../screens/SupportRequestsScreen';
+import SupportReplyScreen from '../screens/SupportReplyScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -109,6 +111,16 @@ export function RootNavigator() {
           <Stack.Screen
             name="MySupportRequests"
             component={MySupportRequestsScreen}
+          />
+
+          <Stack.Screen
+            name="SupportRequests"
+            component={SupportRequestsScreen}
+          />
+
+          <Stack.Screen
+            name="SupportReply"
+            component={SupportReplyScreen}
           />
                               
           {role === 'LECTURER' && (

@@ -10,6 +10,10 @@ import type {
   TimetableEntry,
 } from './timetableApi';
 
+import type {
+  UserEvent,
+} from './eventApi';
+
 const REMINDER_CHANNEL_ID =
   'academic-reminders';
 
@@ -387,6 +391,117 @@ export async function syncTimetableReminders(
 
       reminderMinutes:
         entry.reminder_minutes,
+    });
+  }
+}
+
+function buildEventReminderBody(
+  reminderMinutes: number,
+) {
+  if (reminderMinutes === 1440) {
+    return 'This event is coming up in 1 day.';
+  }
+
+  if (reminderMinutes === 60) {
+    return 'This event is coming up in 1 hour.';
+  }
+
+  return `This event is coming up in ${reminderMinutes} minutes.`;
+}
+
+export async function syncEventReminders(
+  events: UserEvent[],
+) {
+  const permissionGranted =
+    await initializeNotifications();
+
+  if (!permissionGranted) {
+    return;
+  }
+
+  const expectedIds = new Set(
+    events
+      .filter(
+        event =>
+          !event.is_completed &&
+          event.reminder_minutes > 0,
+      )
+      .map(event =>
+        buildNotificationId(
+          'EVENT',
+          event.id,
+        ),
+      ),
+  );
+
+  const triggerIds =
+    await notifee.getTriggerNotificationIds();
+
+  // remove complete, not exist, reminder off noti
+  for (const notificationId of triggerIds) {
+    if (
+      notificationId.startsWith(
+        'event-',
+      ) &&
+      !expectedIds.has(
+        notificationId,
+      )
+    ) {
+      await notifee.cancelNotification(
+        notificationId,
+      );
+    }
+  }
+
+  //sync the event status based on database
+  for (const event of events) {
+    await cancelReminder(
+      'EVENT',
+      event.id,
+    );
+
+    if (
+      event.is_completed ||
+      event.reminder_minutes <= 0
+    ) {
+      continue;
+    }
+
+    const eventDate =
+      new Date(
+        `${event.event_date}T${event.event_time.slice(
+          0,
+          5,
+        )}:00`,
+      );
+
+    const reminderDate =
+      new Date(
+        eventDate.getTime() -
+          event.reminder_minutes *
+            60_000,
+      );
+
+    // Not reshcedule for the expired event
+    if (
+      reminderDate.getTime() <=
+      Date.now()
+    ) {
+      continue;
+    }
+
+    await scheduleOneTimeReminder({
+      id: event.id,
+      sourceType: 'EVENT',
+
+      title: event.title,
+
+      body: buildEventReminderBody(
+        event.reminder_minutes,
+      ),
+
+      scheduledAt:
+        reminderDate,
     });
   }
 }

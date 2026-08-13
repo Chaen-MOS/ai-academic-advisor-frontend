@@ -25,4 +25,8 @@ export type RootStackParamList = {
   MyEvents: undefined;
   HelpCentre: undefined;
   MySupportRequests: undefined;
+  SupportRequests: undefined;
+  SupportReply: {
+  ticketId: string;
+};
 };

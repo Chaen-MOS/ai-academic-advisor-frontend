@@ -75,8 +75,7 @@ export default function HelpCentreScreen({
           </Text>
 
           <Text style={styles.description}>
-            Find academic guidance or contact
-            someone for additional support.
+            Contact someone for additional support.
           </Text>
         </View>
 
@@ -87,7 +86,7 @@ export default function HelpCentreScreen({
         <HelpRow
           icon={BookOpen}
           title="Academic Questions"
-          description="Ask the AI advisor about courses, academic rules and programme information."
+          description="Ask the AI advisor"
           onPress={() =>
             navigation.navigate('Home')
           }
@@ -96,7 +95,7 @@ export default function HelpCentreScreen({
         <HelpRow
           icon={MessageCircle}
           title="Contact Advisor"
-          description="Send a support request to a lecturer or academic advisor."
+          description="Send a support request"
           onPress={() =>
             navigation.navigate(
               'ContactAdvisor',
@@ -111,7 +110,7 @@ export default function HelpCentreScreen({
         <HelpRow
           icon={MessagesSquare}
           title="My Support Requests"
-          description="View replies and check the status of your support requests."
+          description="View your support requests."
           onPress={() =>
             navigation.navigate(
               'MySupportRequests',

@@ -1,6 +1,13 @@
 import type {LucideIcon} from 'lucide-react-native';
 import { RootStackParamList } from './navigation';
 
+type NoParamRouteName = {
+  [K in keyof RootStackParamList]:
+    RootStackParamList[K] extends undefined
+      ? K
+      : never;
+}[keyof RootStackParamList];
+
 export type NotificationCategory =
   | 'All'
   | 'Classes'
@@ -31,7 +38,7 @@ export type SettingRowItem = {
   id: string;
   label: string;
   icon: LucideIcon;
-  target?: keyof RootStackParamList;
+  target?: NoParamRouteName;
   type?: 'navigation' | 'switch';
 };
 
