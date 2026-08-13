@@ -24,6 +24,8 @@ export type StudentProfile = {
   profile_source: 'SELF_DECLARED';
   is_verified: boolean;
   chat_memory_enabled: boolean;
+  enable_class_reminders: boolean;
+  enable_event_reminders: boolean;
 };
 
 type ProfileResponse = {
@@ -87,6 +89,8 @@ export async function updateProfile(
     mobileNumber: string | null;
     avatarUrl: string | null;
     chatMemoryEnabled: boolean;
+    enableClassReminders: boolean;
+    enableEventReminders: boolean;
   }>,
 ): Promise<ProfileResponse> {
   const token = await getAccessToken();

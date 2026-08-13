@@ -340,11 +340,9 @@ export async function syncTimetableReminders(
     ),
   );
 
-  // 取得目前 Notifee 已经 schedule 的 notifications
   const triggerIds =
     await notifee.getTriggerNotificationIds();
 
-  // 先清掉已经不存在的 timetable reminder
   for (const notificationId of triggerIds) {
     if (
       notificationId.startsWith(
@@ -360,7 +358,6 @@ export async function syncTimetableReminders(
     }
   }
 
-  // 根据 DB 当前状态重新同步
   for (const entry of entries) {
     if (
       !entry.is_enabled ||
@@ -503,5 +500,39 @@ export async function syncEventReminders(
       scheduledAt:
         reminderDate,
     });
+  }
+}
+
+export async function cancelAllTimetableReminders() {
+  const triggerIds =
+    await notifee.getTriggerNotificationIds();
+
+  for (const notificationId of triggerIds) {
+    if (
+      notificationId.startsWith(
+        'timetable-',
+      )
+    ) {
+      await notifee.cancelNotification(
+        notificationId,
+      );
+    }
+  }
+}
+
+export async function cancelAllEventReminders() {
+  const triggerIds =
+    await notifee.getTriggerNotificationIds();
+
+  for (const notificationId of triggerIds) {
+    if (
+      notificationId.startsWith(
+        'event-',
+      )
+    ) {
+      await notifee.cancelNotification(
+        notificationId,
+      );
+    }
   }
 }

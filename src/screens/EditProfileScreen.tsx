@@ -10,6 +10,7 @@ import {
   Text,
   TextInput,
   View,
+  Switch,
   Image,
 } from 'react-native';
 import {launchImageLibrary} from 'react-native-image-picker';
@@ -20,7 +21,6 @@ import {AcademicSelectField} from '../components/common/AcademicSelectField';
 import {PrimaryButton} from '../components/common/PrimaryButton';
 import {
   academicStatusOptions,
-  notificationPreferenceOptions,
   yearLevelOptions,
 } from '../data/mockData';
 import {colors, radius, spacing, typography} from '../theme';
@@ -32,6 +32,7 @@ import {
 import {useAuth} from '../contexts/AuthContext';
 import {decode} from 'base64-arraybuffer';
 import {supabase} from '../config/supabase';
+import {syncAcademicReminders} from  '../services/academicReminderService';
 
 type EditProfileScreenProps = NativeStackScreenProps<
   RootStackParamList,
@@ -47,13 +48,11 @@ export default function EditProfileScreen({navigation}: EditProfileScreenProps) 
   const [program, setProgram] = useState('');
   const [yearLevel, setYearLevel] = useState('year-1');
   const [academicStatus, setAcademicStatus] = useState('NORMAL');
-  const [notificationPreference, setNotificationPreference] = useState(
-    'courses-deadlines',
-  );
+  const [ enableClassReminders,setEnableClassReminders] = useState(true);
+  const [enableEventReminders,setEnableEventReminders] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
-  const avatarInitial =
-  name.trim().charAt(0).toUpperCase() || '?';
+  const avatarInitial = name.trim().charAt(0).toUpperCase() || '?';
   const [avatarUri, setAvatarUri] = useState<string | null>(null);
 
   useEffect(() => {
@@ -83,6 +82,12 @@ export default function EditProfileScreen({navigation}: EditProfileScreenProps) 
         );
         setAcademicStatus(
           profile.academic_standing ?? 'NORMAL',
+        );
+        setEnableClassReminders(
+          profile.enable_class_reminders ?? true,
+        );
+        setEnableEventReminders(
+          profile.enable_event_reminders ?? true,
         );
       } catch (error) {
         Alert.alert(
@@ -124,7 +129,18 @@ export default function EditProfileScreen({navigation}: EditProfileScreenProps) 
           | 'GRADUATED',
         mobileNumber: phone.trim() || null,
         avatarUrl: avatarUri,
+        enableClassReminders,
+        enableEventReminders,
       });
+      try {
+        await syncAcademicReminders();
+      } catch (error) {
+        console.error(
+          'Failed to sync reminders after profile update:',
+          error,
+        );
+      }
+      
 
       Alert.alert('Profile Updated', 'Your profile was saved successfully.', [
         {
@@ -311,12 +327,47 @@ export default function EditProfileScreen({navigation}: EditProfileScreenProps) 
           </ProfileSection>
 
           <ProfileSection title="Preferences">
-            <AcademicSelectField
-              label="Notifications"
-              value={notificationPreference}
-              options={notificationPreferenceOptions}
-              onChange={setNotificationPreference}
-            />
+            <View style={styles.preferenceSection}>
+              <View style={styles.preferenceItem}>
+                <View style={styles.preferenceText}>
+                  <Text style={styles.preferenceLabel}>
+                    Class Reminders
+                  </Text>
+
+                  <Text style={styles.preferenceDescription}>
+                    Receive notifications before your classes.
+                  </Text>
+                </View>
+
+                <Switch
+                  value={enableClassReminders}
+                  onValueChange={
+                    setEnableClassReminders
+                  }
+                />
+              </View>
+
+              <View style={styles.divider} />
+
+              <View style={styles.preferenceItem}>
+                <View style={styles.preferenceText}>
+                  <Text style={styles.preferenceLabel}>
+                    Event Reminders
+                  </Text>
+
+                  <Text style={styles.preferenceDescription}>
+                    Receive notifications for your personal events.
+                  </Text>
+                </View>
+
+                <Switch
+                  value={enableEventReminders}
+                  onValueChange={
+                    setEnableEventReminders
+                  }
+                />
+              </View>
+            </View>
           </ProfileSection>
 
           <View style={styles.saveButtonContainer}>
@@ -504,5 +555,56 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
     borderRadius: 43,
+  },
+  preferenceSection: {
+    marginTop: spacing.lg,
+  },
+
+  preferenceTitle: {
+    ...typography.body,
+
+    fontWeight: '700',
+
+    color: colors.primaryText,
+
+    marginBottom: spacing.md,
+  },
+
+  preferenceItem: {
+    flexDirection: 'row',
+
+    justifyContent: 'space-between',
+
+    alignItems: 'center',
+
+    paddingVertical: spacing.md,
+  },
+
+  preferenceText: {
+    flex: 1,
+
+    paddingRight: spacing.md,
+  },
+
+  preferenceLabel: {
+    ...typography.body,
+
+    color: colors.primaryText,
+
+    fontWeight: '700',
+  },
+
+  preferenceDescription: {
+    ...typography.small,
+
+    color: colors.secondaryText,
+
+    marginTop: spacing.xxs,
+  },
+
+  divider: {
+    height: StyleSheet.hairlineWidth,
+
+    backgroundColor: colors.divider,
   },
 });
