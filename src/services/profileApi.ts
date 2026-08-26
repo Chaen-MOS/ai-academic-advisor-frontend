@@ -26,6 +26,7 @@ export type StudentProfile = {
   chat_memory_enabled: boolean;
   enable_class_reminders: boolean;
   enable_event_reminders: boolean;
+  career_interest: string | null;
 };
 
 type ProfileResponse = {
@@ -91,6 +92,7 @@ export async function updateProfile(
     chatMemoryEnabled: boolean;
     enableClassReminders: boolean;
     enableEventReminders: boolean;
+    careerInterest: string | null;
   }>,
 ): Promise<ProfileResponse> {
   const token = await getAccessToken();
