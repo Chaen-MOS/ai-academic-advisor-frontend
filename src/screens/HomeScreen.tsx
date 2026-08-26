@@ -638,6 +638,41 @@ const markdownStyles = {
     paddingHorizontal: 4,
     borderRadius: 4,
   },
+  hr: {
+    backgroundColor: colors.divider,
+    height: 1,
+    marginTop: spacing.sm,
+    marginBottom: spacing.md,
+  },
+  heading1: {
+    ...typography.body,
+    fontSize: 19,
+    lineHeight: 24,
+    fontWeight: '700' as const,
+    color: colors.primaryText,
+    marginTop: spacing.sm,
+    marginBottom: spacing.xs,
+  },
+
+  heading2: {
+    ...typography.body,
+    fontSize: 18,
+    lineHeight: 23,
+    fontWeight: '700' as const,
+    color: colors.primaryText,
+    marginTop: spacing.sm,
+    marginBottom: spacing.xs,
+  },
+
+  heading3: {
+    ...typography.body,
+    fontSize: 16,
+    lineHeight: 21,
+    fontWeight: '700' as const,
+    color: colors.primaryText,
+    marginTop: spacing.sm,
+    marginBottom: spacing.xs,
+  },
 };
 
 const styles = StyleSheet.create({
